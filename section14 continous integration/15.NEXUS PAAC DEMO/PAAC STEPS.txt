@@ -1,0 +1,37 @@
+stage("uploadArtifact"){
+            steps{
+                nexusArtifactUploader(
+                            nexusVersion: 'nexus3',
+                            protocol: 'http',
+                            nexusUrl: '172.31.54.125:8081',
+                            groupId: 'QA',
+                            version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}",
+                            repository: NEXUS_REPOSITORY,
+                            credentialsId: NEXUS_CREDENTIAL_ID,
+                            artifacts: [
+                                [artifactId: pom.artifactId,
+                                classifier: '',
+                                file: artifactPath,
+                                type: pom.packaging],
+                                [artifactId: pom.artifactId,
+                                classifier: '',
+                                file: "pom.xml",
+                                type: "pom"]
+                            ]
+
+
+AFTER CHANGING THE VERSION WE NEED TO MAKE CHNAGES TO JENKINS
+manage jenkins-->config system
+-find Build TimeStamp
+1>make chnages acc to img1
+
+
+
+-create a new item in jenkins and run
+-before u run if u have shut down your system u have to make changes in the jenkins with the new pvt not publicip
+goto manage jenkins-->config system-->sonarcube servers-->change the servrURL with current ip()of sonarcube vm
+(and make sure mysonarcube token is selected)
+
+-now goto sonarcube and select our project-->settings-->webhooks-->uodate the publicip to pvt ip of jenkins
+
+in nexus website u can browser and see the new war files and can download it as well

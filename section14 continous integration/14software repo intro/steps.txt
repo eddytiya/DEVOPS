@@ -1,0 +1,11 @@
+open sonatype nexus
+goto server administration and congif-->repositories00>u can see a maven-snapshot (we will be creating our own repository)
+
+click on crete repo-->select maven(hosted)
+name:vprofile-repo
+and create repo
+
+now we have to setup credentials so goto jenkins
+manage jenkins-->manage credentials-->Stores scoped to Jenkins(click on jenkins logo(system))-->Global credentials (unrestricted)
+click on add credentials
+2>refer img 2 for credetials

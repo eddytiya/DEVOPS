@@ -1,0 +1,58 @@
+-pipeline as a code
+"#we are going to write some sode which does 3 things fetch the code build the code and run some tests
+#first pipeline code
+
+pipeline {
+    agent any
+    tools {
+        maven "MAVEN3"
+        jdk "OracleJDK11"
+    }
+
+    stages {
+        stage('fetch code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/hkhcoder/vprofile-project.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'mvn install -DskipTests'
+            }
+            post {
+                success {
+                    echo "Archiving artifacts now."
+                    archiveArtifacts artifacts: '**/*.war'
+                }
+            }
+        }
+        stage('UNIT TESTS') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+    }
+}
+
+"
+
+-open jenkins create a sample-paac
+give name :sample-paac
+select pipeline
+and ok
+
+-then there will be a pipelin secion paste the above code there
+and save and run the pipeline
+
+-a success mesage will pop up
+
+OR WE CAN RUN IT IN ANOTHER WAY
+
+we can mention or url and branch 
+
+
+to generate pipeline code from chatgpt we can 
+
+jenkins file with fetch source code from git,build with mvn install,post success step with archiving artifacts and mvn test stage
+
+-also include branch

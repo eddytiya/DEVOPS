@@ -1,0 +1,116 @@
+CODE ANALYSIS WITH SONARCUBE
+OPEN A TEXT EDITOR AND PASTE THIS CODE
+"
+pipeline {
+    agent any
+    tools {
+        maven "MAVEN3"
+        jdk "OracleJDK11"
+    }
+
+    stages {
+        stage('Fetch Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/hkhcoder/vprofile-project.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'mvn install -DskipTests'
+            }
+            post {
+                success {
+                    echo "Archiving artifacts now."
+                    archiveArtifacts artifacts: '**/*.war'
+                }
+            }
+        }
+        stage('Unit Tests') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('checkstyle and analysis'){
+            steps{
+                sh 'mvn checkstyle:checkstyle'
+            }
+        }
+    }
+}
+
+
+in the above code this bock is added
+"
+stage('checkstyle and analysis'){
+            steps{
+                sh 'mvn checkstyle:checkstyle'
+            }
+        }
+"
+
+
+no test the code in jenkins create a new item with ppipeline and just build the code and get a success message
+
+now go to dashboard-->manage jenkins-->tools() which we creted is the sonal cube environment
+
+-use the below code we created and added new variables to test it again
+pipeline {
+    agent any
+    tools {
+        maven "MAVEN3"
+        jdk "OracleJDK11"
+    }
+
+    stages {
+        stage('Fetch Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/hkhcoder/vprofile-project.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'mvn install -DskipTests'
+            }
+            post {
+                success {
+                    echo "Archiving artifacts now."
+                    archiveArtifacts artifacts: '**/*.war'
+                }
+            }
+        }
+        stage('Unit Tests') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('checkstyle and analysis'){
+            steps{
+                sh 'mvn checkstyle:checkstyle'
+            }
+        }
+        stage('Sonar Analysis'){
+            environment {
+                scannerHome= tool 'sonar4.7'
+            }
+            steps{
+                withSonarQubeEnv('sonar'){
+                    sh''' ${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
+                   -Dsonar.projectName=vprofile-repo \
+                   -Dsonar.projectVersion=1.0 \
+                   -Dsonar.sources=src/ \
+                   -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
+                   -Dsonar.junit.reportsPath=target/surefire-reports/ \
+                   -Dsonar.jacoco.reportsPath=target/jacoco.exec \
+                   -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml
+                    
+                     '''
+                }
+
+            }
+        }
+    }
+}
+
+- u can go to sonar cube to see the passed or failed  in the projects section
+select our projec tasee the project quality gates and u can see there is only 1 quality gate 
+next we r going to add more quality gate

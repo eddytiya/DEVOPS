@@ -1,0 +1,29 @@
+-open jenkins and sonatype
+
+-manage jenkins-->tools
+scroll down to snoar cude scanner
+click on add sonarcube sacnner
+name:sonar4.7
+and select this version :SonarQube Scanner 4.7.0.2747
+AND save
+
+now integrate sonarqube server with jenkins
+
+goto settings system
+scrolldown and select SONARQUBE SERVER
+check environment variables
+and click on add sonarQube
+
+give name :sonar
+and for url select sonar in aws and copy the public ip:100.25.204.250
+next is the token so for token goto sonarcube server
+
+2>on the top right side togo your account (administrator)-->my accoount-->security-->give name of the toksn("jenkins") and create generate
+copy and store the token
+token:d292a7fa87dc40d08df3d517883f1d9039554942
+
+
+IN JENKINS SAVE THE PAGE 
+again goto manage jenkins-->goto settings system now navigate to SonarQube servers 
+3>and addsonar and reger the image 3
+and save

@@ -1,0 +1,84 @@
+-in the sonar sube server goto quality gates
+create
+give name:vprofile-qg
+add some rules on ovr code 
+1>we added a condition that whenever there r more than 60 bugs in our ove code there should be an error thrown
+
+now link the qualitygate with our project
+ goto projects-->project setting-->quality gate and select the quaitygate
+then 
+select webhooks -->create
+name:jenkins-ci-webhooks
+URL(jenkins private ip and port number from aws):http://172.31.38.13:8080/sonarcube-webhook
+and create 
+
+now in AWS goto jenkins security grup and click on edit inbound rues and add 8080 from sonar-sg grup
+
+pipeline {
+    agent any
+    tools {
+        maven "MAVEN3"
+        jdk "OracleJDK11"
+    }
+
+    stages {
+        stage('Fetch Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/hkhcoder/vprofile-project.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'mvn install -DskipTests'
+            }
+            post {
+                success {
+                    echo "Archiving artifacts now."
+                    archiveArtifacts artifacts: '**/*.war'
+                }
+            }
+        }
+        stage('Unit Tests') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('Checkstyle and Analysis') {
+            steps {
+                sh 'mvn checkstyle:checkstyle'
+            }
+        }
+        stage('Sonar Analysis') {
+            environment {
+                scannerHome = tool 'sonar4.7'
+            }
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh '''
+                        ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=vprofile \
+                            -Dsonar.projectName=vprofile-repo \
+                            -Dsonar.projectVersion=1.0 \
+                            -Dsonar.sources=src/ \
+                            -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
+                            -Dsonar.junit.reportsPath=target/surefire-reports/ \
+                            -Dsonar.jacoco.reportsPath=target/jacoco.exec \
+                            -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml
+                    '''
+                }
+            }
+        }
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+    }
+}
+
+
+-running the above code will shw an error becz the gate we set up our code has 82 bugs and we set the limit for 60 bugs sot it will show an error
+
+nake changes in the quality gate we set from 60 to 1000 so that our project runs successfullyS
