@@ -1,0 +1,26 @@
+-open both the repos
+
+
+settings-->secret-->action
+
+
+
+create an IAM user and crete a secret and pub lic keys and cp it ito the 
+above github location
+
+
+
+now create an S3 bucket
+
+cp the bucket name
+ADD IT INTO THE IASC REPO ONLY AS A SECRET
+
+
+
+
+
+NOW ecr(elsatic container registry)
+
+
+COPY THE URI
+AND CP IT INTO ACTIONS

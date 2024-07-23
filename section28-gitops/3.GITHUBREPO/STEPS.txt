@@ -1,0 +1,108 @@
+PREPARE GITHUB REPO
+
+
+
+adity@DESKTOP-GS354MB MINGW64 ~
+$ cd ~/.ssh
+
+adity@DESKTOP-GS354MB MINGW64 ~/.ssh
+$ ssh-keygen
+Generating public/private ed25519 key pair.
+Enter file in which to save the key (/c/Users/adity/.ssh/id_ed25519): actions
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in actions
+Your public key has been saved in actions.pub
+The key fingerprint is:
+SHA256:KMtWIPSpzZpkTeYd76Aj/yrbelOB8A78syhOYxCejZY adity@DESKTOP-GS354MB
+The key's randomart image is:
++--[ED25519 256]--+
+|  .              |
+| ... .           |
+|...o*..          |
+|..BXoo.+         |
+|.E+=* =.S        |
+|oo ++=.o         |
+| ++.*+  .        |
+|+ +=+.           |
+|.oo=++.          |
++----[SHA256]-----+
+
+
+
+
+
+
+
+
+
+
+adity@DESKTOP-GS354MB MINGW64 ~/.ssh
+$ export GIT_SSH_COMMAND="ssh -i ~/.ssh/actions"
+
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure
+$ git clone git@github.com:eddytiya/vprofile-action.git
+Cloning into 'vprofile-action'...
+remote: Enumerating objects: 144, done.
+remote: Total 144 (delta 0), reused 0 (delta 0), pack-reused 144
+Receiving objects: 100% (144/144), 6.11 MiB | 2.49 MiB/s, done.
+Resolving deltas: 100% (17/17), done.
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure
+$ git clone git@github.com:eddytiya/iac-vprofile.git
+[clone both the repos]
+
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure
+$ ls
+iac-vprofile/  vprofile-action/
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure
+$ cd iac-vprofile/
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure/iac-vprofile (main)
+$ git config core.sshCommand "ssh -i ~/.ssh/action -F /dev/null"
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure/iac-vprofile (main)
+$ cd ..
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure
+$ cd vprofile-action/
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure/vprofile-action (main)
+$ git config core.sshCommand "ssh -i ~/.ssh/action -F /dev/null"
+
+
+
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure
+$ cd vprofile-action/
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure/vprofile-action (main)
+$ git config core.sshCommand "ssh -i ~/.ssh/action -F /dev/null"
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure/vprofile-action (main)
+$ git config --global user.name devops4sure
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure/vprofile-action (main)
+$ git config --global user.email devops4sure
+
+
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure
+$ cp -r iac-vprofile main-iac
+
+
+
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure
+$ cd iac-vprofile/
+
+adity@DESKTOP-GS354MB MINGW64 /d/devops4sure/iac-vprofile (main)
+$ git branch -a
+* main
+  remotes/origin/HEAD -> origin/main
+  remotes/origin/main
+  remotes/origin/stage
+
