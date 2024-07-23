@@ -1,0 +1,102 @@
+-pip install python-jenkins
+-pip install 'fabric<2.0':install fabric of version 2 or less
+
+ mkdir opt
+ cd opt
+ mkdir pyscripts
+ cd pyscripts
+ mkdir fabric
+ vim fabricfile.py
+(python2)
+      def greeting(msg)
+          print "good %s" %msg
+
+3>for output refer img3
+
+
+--update the command
+from fabric.api import *
+
+def greeting(msg)
+    print "good %s" %msg
+
+
+def system_info():
+    print "disk space"
+    local("df -h")
+
+    print "RAM size"
+    local("free -m")
+
+    print "system uptime"
+    local("uptime")
+-4>fab -l
+-fab systeminfo
+
+---more update the code for multi vm connection
+
+from fabric.api import *
+
+def greeting(msg)
+    print "good %s" %msg
+
+
+def system_info():
+    print "disk space"
+    local("df -h")
+
+    print "RAM size"
+    local("free -m")
+
+    print "system uptime"
+    local("uptime")
+
+def remote_exec():
+    print "get system info"
+    run("hostname)
+    run("uptime")
+    run("df -h")
+    run ("free -m")
+
+
+
+
+-----------------------
+logint o web01
+
+-useradd devops
+-passwd devops
+-visudo
+5>make changes acc to img 5 to gice user privilages
+6>-vi /etc/ssh/sshd_config:open amd make changes acc ording to img 6
+-systemctl restart sshd
+
+--------------------------
+for web 02
+-useradd devops
+-passwd devops
+-visudo
+5>make changes acc to img 5 to gice user privilages
+6>-vi /etc/ssh/sshd_config:open amd make changes acc ording to img 6
+-systemctl restart sshd
+-logout
+
+
+-------------
+login to scriptbox
+
+ssh devops@192.168.10.3(weh 01 login from ssh)
+ssh devops@192.168.10.4(weh 02 login from ssh)
+
+-generate the ssh keys
+ssh-keygen
+
+-now copt the keys
+ssh-copy-id devops@192.168.10.3
+(repeat the above 2 setps for web02 as well)
+
+
+clear
+
+-------------------------------
+7>now we can run the cmds
