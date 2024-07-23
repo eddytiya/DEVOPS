@@ -1,0 +1,14 @@
+-search vpc
+-go to your VPCs
+-u will see a vpc already there rename it to DEFAULT
+
+now click on subents 
+u can see 2 subnets 
+rename them 
+default-pubsub1
+default-pubsub2
+
+
+
+u can find whetehr a subnet is public or pvt by clicking on its route table entries
+-so selsct default-pubsub2 and click on route tables

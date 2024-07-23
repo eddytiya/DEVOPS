@@ -1,0 +1,75 @@
+
+creating a new dir with docker file and image init
+
+ubuntu@ip-172-31-17-108:~$ ls
+EntryCMD  cmd  vprodbdata
+ubuntu@ip-172-31-17-108:~$ cd EntryCMD
+ubuntu@ip-172-31-17-108:~/EntryCMD$ ls
+ubuntu@ip-172-31-17-108:~/EntryCMD$ mkdir cmd
+ubuntu@ip-172-31-17-108:~/EntryCMD$ vim cmd/Dockerfile
+FROM ubuntu
+CMD ["echo hi"]
+ubuntu@ip-172-31-17-108:~/EntryCMD$ docker build -t printer:v1 cmd/
+
+
+
+
+
+[running the docker printer would give us op hello]
+ubuntu@ip-172-31-17-108:~/EntryCMD$ cat cmd/Dockerfile
+FROM ubuntu
+CMD ["echo","hello"]
+ubuntu@ip-172-31-17-108:~/EntryCMD$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+printer      v1        3e3196137fca   4 weeks ago   78.1MB
+ubuntu       latest    35a88802559d   4 weeks ago   78.1MB
+ubuntu@ip-172-31-17-108:~/EntryCMD$ docker run printer:v1
+hello
+
+
+
+
+
+
+ubuntu@ip-172-31-17-108:~/EntryCMD$ mkdir entry
+ubuntu@ip-172-31-17-108:~/EntryCMD$ vim entry/Dockerfile
+ubuntu@ip-172-31-17-108:~/EntryCMD$ cat entry/Dockerfile
+FROM ubuntu:latest
+ENTRYPOINT ["echo"]
+
+ubuntu@ip-172-31-17-108:~/EntryCMD$ docker build -t printer:v2:latest
+
+
+
+[for entry point u need to pass the arguemet there will be no arg passed when u dont passs any arg asnshown below]
+ubuntu@ip-172-31-17-108:~/EntryCMD$ docker run printer:v2
+
+ubuntu@ip-172-31-17-108:~/EntryCMD$ docker run printer:v2 hello
+hello
+ubuntu@ip-172-31-17-108:~/EntryCMD$
+
+
+
+
+
+[we can use both together as well]
+
+
+ubuntu@ip-172-31-17-108:~/EntryCMD$ mkdir entrycmd
+ubuntu@ip-172-31-17-108:~/EntryCMD$ vim entrycmd/Dockerfile
+ubuntu@ip-172-31-17-108:~/EntryCMD$ cat entrycmd/Dockerfile
+FROM ubuntu:latest
+ENTRYPOINT ["echo"]
+cmd ["hello"]
+
+ubuntu@ip-172-31-17-108:~/EntryCMD$ docker build -t printer:v3 entrycmd
+
+
+ubuntu@ip-172-31-17-108:~/EntryCMD$ docker build -t printer:v3 entrycmd/
+
+ubuntu@ip-172-31-17-108:~/EntryCMD$ docker run printer:v3
+hello
+ubuntu@ip-172-31-17-108:~/EntryCMD$ docker run printer:v3 heloendpoint
+heloendpoint
+
+

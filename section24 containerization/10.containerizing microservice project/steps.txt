@@ -1,0 +1,59 @@
+containerizing microservice project
+
+
+microservice is used to deliver features to users quickly and efficiently
+
+we have 4 services in here
+1.nginx:-api gateway
+        -frontend from where all communication betweenw other servicesa re carried thru
+        -it carries communication thru the url or paths
+
+    if request comes from /(root) it will send it to the client microservice (2.angular):angular loads the frontend pages for the website
+    for backend ata it is going to contact emart api (3.nodejs) using db 
+    also 4.book api using java
+
+
+
+its source code is on github:https://github.com/devopshydclub/emartapp
+
+so we will clone its source code go thru its docker file and docker compose file
+
+open the fithub in the emart file
+
+
+create a new dir and clone it
+adity@DESKTOP-GS354MB MINGW64 /d/docker
+$ cd /d/emart
+
+adity@DESKTOP-GS354MB MINGW64 /d/emart
+$ git clone git@github.com:devopshydclub/emartapp.git
+                           OR
+adity@DESKTOP-GS354MB MINGW64 /d/emart
+$ git clone https://github.com/devopshydclub/emartapp.git
+
+
+adity@DESKTOP-GS354MB MINGW64 /d/emart
+$
+(this will open vs code in the current dir)
+
+
+IN VS CODE
+
+1>open docker file here AS IN IMG1
+FROM node:14 AS web-build
+WORKDIR /usr/src/app
+COPY ./ ./client
+RUN cd client && npm install && npm run build --prod
+
+# Use official nginx image as the base image
+FROM nginx:latest
+
+# Copy the build output to replace the default nginx contents.
+COPY --from=web-build /usr/src/app/client/dist/client/ /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 4200
+EXPOSE 4200
+
+
+                                                    

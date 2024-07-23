@@ -1,0 +1,215 @@
+fact variables are runtime variables
+we will run setup variables thru adhoc commands
+
+Last login: Tue Jul  9 07:21:41 2024 from 49.47.1.138
+ubuntu@control:~$ sudo -i
+root@control:~# cd vprofile
+root@control:~/vprofile# cd exercise9
+root@control:~/vprofile/exercise9# ls
+ansible.cfg    group_vars  inventory
+clientkey.pem  host_vars   vars_precedence.yaml
+root@control:~/vprofile/exercise9# ansible-playbook vars_precedence.yaml
+
+1>copy the file and see the output of ex9 in img1
+
+u can see the gather facts always run in the img1 we can disable it 
+add this now
+{gather_facts: false}
+
+
+
+- name: understanding vars
+  hosts: all
+  become: yes
+  gather_facts: false
+  vars:
+    USRNM: playuser
+    COMM: variable from playbook
+  tasks:
+    - name: create user
+      ansible.builtin.user:
+        name: "{{USRNM}}"
+        comment: "{{COMM}}"
+      register: usrout
+
+    - debug:
+        var: usrout.name
+
+    - debug:
+        var: usrout.comment
+
+
+2>now u can see in img 2 gathering facts bar is not present there
+
+
+-->we can do this task thru adhoc also
+root@control:~/vprofile/exercise9# ansible -m setup web01
+3>u can see there are many variables init 
+so we will print these variables for this we need to create annother playbook
+
+root@control:~/vprofile/exercise9# vim print_facts.yaml
+         ---
+- name: print facts
+  hosts: all
+  tasks:
+    - name: Print OS name
+      debug:
+        var: ansible_distribution
+
+
+root@control:~/vprofile/exercise9# ansible-playbook print_facts.yaml
+
+now we disable gathring facts in the yaml file
+
+---
+- name: print facts
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Print OS name
+      debug:
+        var: ansible_distribution
+
+-u can see in img 4 and 5 
+in 4 gathering facts is not disabled the taks prints a name centos but in img 5
+task variable is not defined so becz we disabled gathering facts so we need to define
+
+
+comment the line
+---
+- name: print facts
+  hosts: all
+  #gather_facts: false
+  tasks:
+    - name: Print OS name
+      debug:
+        var: ansible_distribution
+
+--------------------------------------
+now in aws crate a new instance vprofile-web03 with ubuntu
+-key should be already created client key
+-in ntwak slect exisitng grup select client-sg
+and launch instance
+
+
+copy the pvt ip of web02:172.31.20.123 and update the inventory file
+
+add in hosts and childern web03
+   all:
+  hosts:
+    web01:
+      ansible_host: 172.31.53.37
+    web02:
+      ansible_host: 172.31.63.43
+    web03:
+      ansible_host: 172.31.20.123
+    db01:
+      ansible_host: 172.31.50.13
+
+  children:
+    webservers:
+      hosts:
+        web01:
+        web02:
+        web03:
+    dbservers:
+      hosts:
+        db01:
+    dc_oregon:
+      children:
+        webservers:
+        dbservers:
+      vars:
+        ansible_user: ec2-user
+        ansible_ssh_private_key_file: clientkey.pem
+
+root@control:~/vprofile/exercise9# ansible -m ping all
+web03 | UNREACHABLE! => {
+    "changed": false,
+    "msg": "Failed to connect to the host via ssh: Warning: Permanently added '172.31.20.123' (ED25519) to the list of known hosts.\r\nec2-user@172.31.20.123: Permission denied (publickey).",
+    "unreachable": true
+}
+
+running after setup throws us with an error due to the user name becz we r using ubuntu user
+so we need to setup in the higher priority a seperate username
+
+-->we we define variable in the host which will 
+all:
+  hosts:
+    web01:
+      ansible_host: 172.31.53.37
+    web02:
+      ansible_host: 172.31.63.43
+    web03:
+      ansible_host: 172.31.20.123
+      ansible_user: ubuntu
+    db01:
+      ansible_host: 172.31.50.13
+
+  children:
+    webservers:
+      hosts:
+        web01:
+        web02:
+        web03:
+    dbservers:
+      hosts:
+        db01:
+    dc_oregon:
+      children:
+        webservers:
+        dbservers:
+      vars:
+        ansible_user: ec2-user
+        ansible_ssh_private_key_file: clientkey.pem
+
+
+ansible -m ping all
+and u can see in img6 all are pinged
+
+
+
+
+root@control:~/vprofile/exercise9# ansible-playbook print_facts.yaml
+and u can see the setup module is ubuntu in img 7
+
+
+-->execute the setup modeule again to see variables
+root@control:~/vprofile/exercise9# ^C
+root@control:~/vprofile/exercise9# ansible -m setup web01
+--and check for other variables
+
+NOW update the PRINT_FACTS.YAML FILE WITH THE VARIABLES FOUND
+
+---
+- name: print facts
+  hosts: all
+  #gather_facts: false
+  tasks:
+    - name: Print OS name
+      debug:
+        var: ansible_distribution
+
+    - name: Print selinux mode
+      debug:
+        var: ansible_selinux.mode
+
+    - name: Print RAM memory
+      debug:
+        var: ansible_memory_mb.real.free
+
+root@control:~/vprofile/exercise9# vim print_facts.yaml
+root@control:~/vprofile/exercise9# ansible-playbook print_facts.yaml
+
+
+
+
+
+-again update the file with processor name
+
+
+
+
+
+
+

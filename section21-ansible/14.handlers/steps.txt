@@ -1,0 +1,103 @@
+-restarting the service whenever we want and not every time
+
+ADD HANDELERS TO THE PROVISIONING FILE
+---
+- name: provisioning
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install packages on CentOS
+      yum:
+        name: "{{ item }}"
+        state: present
+      when: ansible_distribution == "CentOS"
+      loop:
+        - chrony
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Install packages on Ubuntu
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+      loop:
+        - ntp
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Start and enable chrony service on CentOS
+      service:
+        name: chronyd
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Start and enable ntp service on Ubuntu
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: banner file
+      copy:
+        content: '# This server is managed my ansible. no manual changes please'
+        dest: /etc/motd
+
+    - name: Create a directory if it does not exist
+      file:
+        path: /etc/some_directory
+        state: directory
+
+
+    - name: Deploy ntp agent conf on centos
+      template:
+        src: templates/ntpconf_centos
+        dest: /etc/chrony.conf
+        backup: yes
+      when: ansible_distribution == "CentOS"
+      notify:
+        -  restart chrony service on CentOS
+
+
+    - name: Deploy ntp agent conf on ubuntu
+      template:
+        src: templates/ntpconf_ubuntu
+        dest: /etc/ntp.conf
+        backup: yes
+      when: ansible_distribution == "Ubuntu"
+
+  handlers:
+    - name: restart chrony service on CentOS
+      service:
+        name: chronyd
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: restart ntp service on Ubuntu
+      service:
+        name: ntp
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+
+root@control:~/vprofile/exercise13# ansible-playbook provisioning.yaml
+U WILL SEE NO CHNAGES SINCE THERE WAS NO CHNAGE IN THE CONF FILE SO MAKE SOME CHNAGES IN THE CENTOS CONF FILE
+
+
+
+root@control:~/vprofile/exercise13# vim templates/ntpconf_centos
+[put some space add some ##### etc ]
+
+
+-u can see in img1 and img2
+in img 1 we change the file and ran the cmd and we can see restart service
+in img 2 we re ran the service and got to know the resatrt sercvie didnt ran cause we didnt make any chnages

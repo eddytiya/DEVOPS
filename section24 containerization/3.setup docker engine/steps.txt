@@ -1,0 +1,18 @@
+setup docker engine
+IN ORDER TO BUILD OUR IMAGES WE NEED DOCKER ENGINE
+
+
+
+INSTALL DOCKER ENGINE NOT DESKTOP(https://docs.docker.com/engine/install/ubuntu/)
+
+
+
+after steps
+
+add ubuntu user 
+root@ip-172-31-17-108:~# usermod -aG docker ubuntu
+root@ip-172-31-17-108:~#
+
+root@ip-172-31-17-108:~# id ubuntu
+uid=1000(ubuntu) gid=1000(ubuntu) groups=1000(ubuntu),4(adm),20(dialout),24(cdrom),25(floppy),27(sudo),29(audio),30(dip),44(video),46(plugdev),119(netdev),120(lxd),999(docker)
+makedure ubuntu is in the docker 

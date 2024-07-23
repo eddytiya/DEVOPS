@@ -1,0 +1,118 @@
+-setup for other 2 hosts
+and cp to ex1 to ex2
+
+-ls
+-cd vprofile
+-ls
+-cp -r exercise1/ exercise2
+-cd exercsie2
+-vim inventory
+
+and make chnages to add web02 and db01 user
+all:
+  hosts:
+    web01:
+      ansible_host: 172.31.27.26
+      ansible_user: ec2-user
+      ansible_ssh_private_key_file: clientkey.pem
+    web02:
+      ansible_host: 172.31.27.131
+      ansible_user: ec2-user
+      ansible_ssh_private_key_file: clientkey.pem
+    db01:
+      ansible_host: 172.31.27.16
+      ansible_user: ec2-user
+      ansible_ssh_private_key_file: clientkey.pem
+--1>now ping web 02 and db01 as shown in thr img1
+
+ansible web02 -m ping -i inventory
+ansible db01 -m ping -i inventory
+
+
+what if we have 50-100 hosts so pinging all these machines will take a lot so we have a concept of gruping
+
+-vim inventory
+
+create 3 grups 1 for the webservers,1 for db and on which contains all the above 2 created grups
+{make this chnages to the inventory file}
+
+all:
+  hosts:
+    web01:
+      ansible_host: 172.31.27.26
+      ansible_user: ec2-user
+      ansible_ssh_private_key_file: clientkey.pem
+    web02:
+      ansible_host: 172.31.27.131
+      ansible_user: ec2-user
+      ansible_ssh_private_key_file: clientkey.pem
+    db01:
+      ansible_host: 172.31.27.16
+      ansible_user: ec2-user
+      ansible_ssh_private_key_file: clientkey.pem
+
+  children:
+    webservers:
+      hosts:
+        web01:
+        web02:
+    dbservers:
+      hosts:
+        db01:
+    dc_oregon:
+      children:
+        webservers:
+        dbservers:
+-save and quit the file and ping the file again
+
+2>refer img2
+ ansible webservers -m ping -i inventory
+ ansible dbservers -m ping -i inventory
+ ansible dc_oregon -m ping -i inventory
+
+oregon checks all the 3 hostsa with grups
+
+
+--------------------------------
+root@ip-172-31-17-204:~/vprofile/exercise2# cd ..
+root@ip-172-31-17-204:~/vprofile# cp -r exercise2 exercise3
+root@ip-172-31-17-204:~/vprofile# ls
+exercise1  exercise2  exercise3
+root@ip-172-31-17-204:~/vprofile#
+
+
+-u can see in the inventory file the host level have the if
+
+make the following chnages in the file
+all:
+  hosts:
+    web01:
+      ansible_host: 172.31.27.26
+    web02:
+      ansible_host: 172.31.27.131
+    db01:
+      ansible_host: 172.31.27.16
+
+  children:
+    webservers:
+      hosts:
+        web01:
+        web02:
+    dbservers:
+      hosts:
+        db01:
+    dc_oregon:
+      children:
+        webservers:
+        dbservers:
+      vars:
+        ansible_user: ec2-user
+        ansible_ssh_private_key_file: clientkey.pem
+
+and save
+
+-u can see the img3 the op of the image
+ansible all -m ping -i inventory
+
+
+

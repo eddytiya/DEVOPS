@@ -1,0 +1,230 @@
+group and host variable
+
+we last time used playbook now we will write inventory based
+-use the same playbook of exercise8
+
+
+root@control:~# cd vprofile
+root@control:~/vprofile# mkdir group_vars
+root@control:~/vprofile# ls
+root@control:~/vprofile# vim group_vars/all
+
+add this
+dbname: sky
+dbuser: pilot
+dbpass: aircraft
+
+-ansible-playbook db.yaml
+
+this is done then we can see the the pervious file has been done which meanis it has much higher prioirty whichhi is playbook
+
+-so open the playbook and comment hte variables
+
+-vim db.yaml
+ #vars:
+    #dbname: electric
+      #dbuser: current
+      #dbpass: tesla
+:wq
+
+- ansible-playbook db.yaml
+
+
+
+
+
+
+
+-----------------------------------------------
+create a new exercise9 and delete yaml file and grup_vars file
+root@control:~/vprofile/exercise8# cd ..
+root@control:~/vprofile# cp -r exercise8 exercise9
+root@control:~/vprofile# cd exercise9
+root@control:~/vprofile/exercise9# ls
+ansible.cfg  clientkey.pem  db.yaml  group_vars  inventory
+root@control:~/vprofile/exercise9# rm -rf db.yaml
+root@control:~/vprofile/exercise9# ls
+ansible.cfg  clientkey.pem  group_vars  inventory
+root@control:~/vprofile/exercise9#
+
+root@control:~/vprofile/exercise9# rm -rf group_vars
+root@control:~/vprofile/exercise9# ls
+ansible.cfg  clientkey.pem  inventory
+
+
+CREATE A NEW YAML FILE
+
+root@control:~/vprofile/exercise9# vim vars_precedence.yaml
+       - name: understanding vars
+  hosts: all
+  become: yes
+  vars:
+    USRNM: playuser
+    COMM: variable from playbook
+  tasks:
+    - name: create user
+      ansible.builtin.user:
+        name: "{{USRNM}}"
+        comment: "{{COMM}}"
+~
+
+root@control:~/vprofile/exercise9# ansible-playbook vars_precedence.yaml
+
+
+update the yaml file with debug output
+
+- name: understanding vars
+  hosts: all
+  become: yes
+  vars:
+    USRNM: playuser
+    COMM: variable from playbook
+  tasks:
+    - name: create user
+      ansible.builtin.user:
+        name: "{{USRNM}}"
+        comment: "{{COMM}}"
+      register: usrout
+    - debug:
+        var: usrout
+1>this will print the op for all the 3 web01/02 and db01 machines
+-->but we are interested only in username and comment
+
+update the yaml file
+
+- name: understanding vars
+  hosts: all
+  become: yes
+  vars:
+    USRNM: playuser
+    COMM: variable from playbook
+  tasks:
+    - name: create user
+      ansible.builtin.user:
+        name: "{{USRNM}}"
+        comment: "{{COMM}}"
+      register: usrout
+
+    - debug:
+        var: usrout.name
+
+    - debug:
+        var: usrout.comment
+2>u can see in img2 the op
+
+
+-createa  agrup _vars file
+
+
+root@control:~/vprofile/exercise9# ls
+ansible.cfg  clientkey.pem  inventory  vars_precedence.yaml
+root@control:~/vprofile/exercise9# mkdir group_vars
+root@control:~/vprofile/exercise9# vim group_vars/all
+
+
+	USRNM: commonuser
+	COMM: variable from groupvars_all file
+
+-->now u have to comment the variables from playbook since it has the higher priority
+3>after commenting the precedence_vars.yaml file we can see the op in img3
+
+
+--->we can also define it for the grup level as well as we did for all the hosts in the inventory file
+__>this is the inventory file
+root@control:~/vprofile/exercise9# cat inventory
+all:
+  hosts:
+    web01:
+      ansible_host: 172.31.53.37
+    web02:
+      ansible_host: 172.31.63.43
+    db01:
+      ansible_host: 172.31.50.13
+
+  children:
+    webservers:
+      hosts:
+        web01:
+        web02:
+    dbservers:
+      hosts:
+        db01:
+    dc_oregon:
+      children:
+        webservers:
+        dbservers:
+      vars:
+        ansible_user: ec2-user
+        ansible_ssh_private_key_file: clientkey.pem
+
+-->as u can see we did for all the hosts now we do it for childern
+
+
+root@control:~/vprofile/exercise9# vim group_vars/webservers
+
+                        USRNM: webgroup
+                        COMM: variable from group_vars/webservers file
+
+               
+-->so we have variables defined in the all file and in the webservers file
+
+
+root@control:~/vprofile/exercise9# ansible-playbook vars_precedence.yaml
+
+
+4>u can see the output with changed things
+
+
+
+--->WE CAN DEFINE THE VARIABLE IN HOSTS USERS AS WELL FOR THAT WE NEED TO CREATE FILE IN THE HOSTS FILE 
+LIKE WEB01 /02 OR DB01
+
+
+root@control:~/vprofile/exercise9# ls
+ansible.cfg  clientkey.pem  group_vars  inventory  vars_precedence.yaml
+root@control:~/vprofile/exercise9# mkdir host_vars
+root@control:~/vprofile/exercise9# vim host_vars/web02
+
+
+         USRNM: web02user
+         COMM: variable from host_vars/web02 file
+~
+
+      
+-->now we have 3 variables
+
+
+root@control:~/vprofile/exercise9# cat group_vars/all
+USRNM: commonuser
+COMM: variable from groupvars_all file
+root@control:~/vprofile/exercise9# cat group_vars/webservers
+USRNM: webgroup
+COMM: variable from group_vars/webservers file
+root@control:~/vprofile/exercise9# cat host_vars/web02
+USRNM: web02user
+COMM: variable from host_vars/web02 file
+root@control:~/vprofile/exercise9#
+
+5>as u can see in img 5 
+the priority has changed the priority file to hosts_varsthen group_vars file then tahe all file
+but if defined in playbook then playbook is used
+
+
+
+
+
+---< uncomment vars from playbook makes change to the priority at all
+root@control:~/vprofile/exercise9# vim vars_precedence.yaml
+root@control:~/vprofile/exercise9# ansible-playbook vars_precedence.yaml
+
+-->we can also define from the cli
+
+root@control:~/vprofile/exercise9# ansible-playbook -e USRNM=cliuser -e COMM=cliuser vars_precedence.yaml
+
+6>running this will oberite the playbook variables as in the image6
+
+
+
+
+
+ 

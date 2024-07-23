@@ -1,0 +1,241 @@
+https://docs.ansible.com/ansible/2.9/modules/modules_by_category.html
+------------------------------------------------
+TASK:CP FILES FROM CONTROL MACHINE TO WEBSERVERS AND DATABASE
+
+-------------------------------------------
+https://docs.ansible.com/ansible/2.9/modules/list_of_files_modules.html
+ABOVE LINK IS FOR FILE MODEULES
+
+-USE THE COPY MODULE
+cp this from the module
+
+-name: Copy file with owner and permissions
+  copy:
+    src: /srv/myfiles/foo.conf
+    dest: /etc/foo.conf
+    owner: foo
+    group: foo
+    mode: '0644'
+
+
+
+
+
+do the following needful
+root@ip-172-31-60-177:~# cd vprofile
+root@ip-172-31-60-177:~/vprofile# cp -r exercise5 exercise6
+root@ip-172-31-60-177:~/vprofile# cd exercise6
+root@ip-172-31-60-177:~/vprofile/exercise6# mv web-db.yaml
+mv: missing destination file operand after 'web-db.yaml'
+Try 'mv --help' for more information.
+root@ip-172-31-60-177:~/vprofile/exercise6# ls
+clientkey.pem  inventory  web-db.taml  web-db.yaml
+root@ip-172-31-60-177:~/vprofile/exercise6# mv web-db.yaml web.yaml
+root@ip-172-31-60-177:~/vprofile/exercise6#vim web.yaml
+
+---
+- name: webserver setup
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Install httpd
+      ansible.builtin.yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable httpd service
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: yes
+    - name: Copy index file
+      copy:
+        src: files/index.html
+        dest: /var/www/html/index.html
+        backup: yes
+[backup is yes but there is no dir so we need to create the dir]
+
+root@ip-172-31-60-177:~/vprofile/exercise6# mkdir files
+root@ip-172-31-60-177:~/vprofile/exercise6# vim files/index.html
+root@ip-172-31-60-177:~/vprofile/exercise6# ansible-playbook -i inventory web.yaml
+
+now we need to login to one of the target so we login to web01
+(login with pvt ip from inventory file)
+- ssh -i clientkey.pem ec2-user@172.31.53.37
+
+
+root@ip-172-31-60-177:~/vprofile/exercise6# ssh -i clientkey.pem ec2-user@172.31.53.37
+Last login: Mon Jul  8 08:22:52 2024 from 172.31.60.177
+[ec2-user@ip-172-31-53-37 ~]$ sudo -i
+[root@ip-172-31-53-37 ~]# cd /var/www/html/
+[root@ip-172-31-53-37 html]# ls
+index.html  index.html.14640.2024-07-08@08:22:52~
+[root@ip-172-31-53-37 html]#
+[u can see the file pushed successfully in index.html and its backupas well with time stamp]
+
+-exit successfully to come back to control machine
+
+===============================================================================================================
+for database modules
+https://docs.ansible.com/ansible/2.9/modules/mssql_db_module.html#mssql-db-module
+
+
+
+
+root@control:~# cd vprofile
+root@control:~/vprofile# cp -r exercise5 exercise7
+root@control:~/vprofile# mv web-db.yaml db.yaml
+mv: cannot stat 'web-db.yaml': No such file or directory
+root@control:~/vprofile# ls
+exercise1  exercise2  exercise3  exercise4  exercise5  exercise6  exercise7
+root@control:~/vprofile# cd exercise7
+root@control:~/vprofile/exercise7# ls
+clientkey.pem  inventory  web-db.taml  web-db.yaml
+root@control:~/vprofile/exercise7# mv web-db.yaml db.yaml
+root@control:~/vprofile/exercise7# ls
+clientkey.pem  db.yaml  inventory  web-db.taml
+root@control:~/vprofile/exercise7# vim db.yaml
+
+add this
+
+---
+- name: DBserver setup
+  hosts: dbsrvgrp
+  become: yes
+  tasks:
+    - name: Install mariadb-server
+      ansible.builtin.yum:
+         name: mariadb-server
+         state: present
+
+    - name: Start maridb service
+      ansible.builtin.service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    - name: Create a new database with name 'accounts'
+      mysql_db:
+        name: accounts
+        state: present
+
+
+-ansible-playbook -i inventory db.yaml
+[this will not run show error becz some modules need dependencies]
+so we need to add modeules requiremnets
+
+
+---ssh to db01 to findout the exact requirements
+# ssh -i clientkey.pem ec2-user@172.31.50.13
+[login to db01]
+
+root@control:~/vprofile/exercise7# ssh -i clientkey.pem ec2-user@172.31.50.13
+Last login: Sun Jul  7 17:11:08 2024 from 172.31.60.177
+[ec2-user@ip-172-31-50-13 ~]$ sudo -i
+[root@ip-172-31-50-13 ~]# yum search python | grep -i mysql
+Last metadata expiration check: 1:36:17 ago on Mon 08 Jul 2024 07:27:57 AM UTC.
+python3-PyMySQL.noarch : Pure-Python MySQL client library
+python3.11-PyMySQL.noarch : Pure-Python MySQL client library
+python3.11-PyMySQL+rsa.noarch : Metapackage for python3.11-PyMySQL: rsa extras
+python3.12-PyMySQL.noarch : Pure-Python MySQL client library
+python3.12-PyMySQL+rsa.noarch : Metapackage for python3.12-PyMySQL: rsa extras
+[root@ip-172-31-50-13 ~]#
+
+-exit
+-exit
+
+and login to the playbook again
+
+ansible-playbook -i inventory db.yaml
+-run this and u will find an socket error so open the playbooka and make this change in the bd acc
+      ---
+- name: DBserver setup
+  hosts: dbservers
+  become: yes
+  tasks:
+    - name: Install mariadb-server
+      ansible.builtin.yum:
+        name: mariadb-server
+        state: present
+
+    - name: Install pymysql
+      ansible.builtin.yum:
+        name: python3-PyMySQL
+        state: present
+
+
+    - name: Start mariadb service
+      ansible.builtin.service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    - name: Create a new database with name 'accounts'
+      mysql_db:
+        name: accounts
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+
+
+    ansible-galaxy collection install community.mysql
+
+use the above cmd and add this
+
+
+
+
+the complete playbook
+
+
+---
+- name: DBserver setup
+  hosts: dbservers
+  become: yes
+  tasks:
+    - name: Install mariadb-server
+      ansible.builtin.yum:
+        name: mariadb-server
+        state: present
+
+    - name: Install pymysql
+      ansible.builtin.yum:
+        name: python3-PyMySQL
+        state: present
+
+
+    - name: Start mariadb service
+      ansible.builtin.service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    - name: Create a new database with name 'accounts'
+      community.mysql.mysql_db:
+        name: accounts
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+    - name: Create database user with name 'vprofile'
+      community.mysql.mysql_user:
+        name: vprofile
+        password: 'admin943'
+        priv: '*.*:ALL'
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+~
+~
+~
+~
+~
+
+
+
+
+
+
+
+
+
+
+
+
+

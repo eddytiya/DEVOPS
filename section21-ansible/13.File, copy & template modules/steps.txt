@@ -1,0 +1,412 @@
+File, copy & template modules
+we will do file operations:https://docs.ansible.com/ansible/2.9/modules/list_of_files_modules.html
+
+Last login: Tue Jul  9 11:13:06 2024 from 49.47.1.138
+ubuntu@control:~$ sudo -i
+root@control:~# cd vprofile
+root@control:~/vprofile# cp -r exercise11 exercise12
+root@control:~/vprofile# cd exercise12
+root@control:~/vprofile/exercise12#
+
+
+__>go to the link and select copy module and choose this example from it
+
+- name: Copy using inline content
+  copy:
+    content: '# This file was moved to /etc/other.conf'
+    dest: /etc/mine.conf
+
+root@control:~/vprofile/exercise12# vim provisioning.yaml
+
+now open playbook and make this changes {bottom 4 new lines}
+
+---
+- name: provisioning
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install packages on CentOS
+      yum:
+        name: "{{ item }}"
+        state: present
+      when: ansible_distribution == "CentOS"
+      loop:
+        - chrony
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Install packages on Ubuntu
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+      loop:
+        - ntp
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Start and enable chrony service on CentOS
+      service:
+        name: chronyd
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Start and enable ntp service on Ubuntu
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: banner file
+      copy:
+        content: '# This server is managed my ansible. no manual chnages please'
+        dest: /etc/motd
+
+
+root@control:~/vprofile/exercise12# ansible-playbook provisioning.yaml
+
+THIS WAS JUST AN EXAMPLE WE NOW NEED TO UPDATE THE CINFIG FILE AND THE BEST EAY TO DO IT IS TO CREATE OUR OWN CONGIF FILE AND 
+REPLACE IT WITH THE EXISTING ONE
+
+-WE NEED TO LOGIN INTO CENTOS AND UBUNTU
+-this is db01 machine
+
+root@control:~/vprofile/exercise12# ssh -i clientkey.pem ec2-user@172.31.50.13
+# This server is managed my ansible. no manual chnages please
+Last login: Tue Jul  9 11:46:39 2024 from 172.31.60.177
+[ec2-user@ip-172-31-50-13 ~]$
+
+
+[ec2-user@ip-172-31-50-13 ~]$ cat /etc/chrony.conf
+[we r going to copy the entire content of the file thats y we cat it]
+
+1> in img 1 the highlighted thing is the one we r going to upgate the settings in
+
+# Use public servers from the pool.ntp.org project.
+# Please consider joining the pool (https://www.pool.ntp.org/join.html).
+pool 2.centos.pool.ntp.org iburst
+
+# Use NTP servers from DHCP.
+sourcedir /run/chrony-dhcp
+
+# Record the rate at which the system clock gains/losses time.
+driftfile /var/lib/chrony/drift
+
+# Allow the system clock to be stepped in the first three updates
+# if its offset is larger than 1 second.
+makestep 1.0 3
+
+# Enable kernel synchronization of the real-time clock (RTC).
+rtcsync
+
+# Enable hardware timestamping on all interfaces that support it.
+#hwtimestamp *
+
+# Increase the minimum number of selectable sources required to adjust
+# the system clock.
+#minsources 2
+
+# Allow NTP client access from local network.
+#allow 192.168.0.0/16
+
+# Serve time even if not synchronized to a time source.
+#local stratum 10
+
+# Require authentication (nts or key option) for all NTP sources.
+#authselectmode require
+
+# Specify file containing keys for NTP authentication.
+keyfile /etc/chrony.keys
+
+# Save NTS keys and cookies.
+ntsdumpdir /var/lib/chrony
+
+# Insert/delete leap seconds by slewing instead of stepping.
+#leapsecmode slew
+
+# Get TAI-UTC offset and leap seconds from the system tz database.
+leapsectz right/UTC
+
+# Specify directory for log files.
+logdir /var/log/chrony
+
+# Select which information is logged.
+#log measurements statistics tracking
+
+# Amazon Time Sync Service
+server 169.254.169.123 prefer iburst minpoll 4 maxpoll 4
+
+-exit and come back to control machine
+
+[ec2-user@ip-172-31-50-13 ~]$ exit
+logout
+Connection to 172.31.50.13 closed.
+root@control:~/vprofile/exercise12# mkdir templates
+root@control:~/vprofile/exercise12# ls
+ansible.cfg    group_vars  inventory          templates
+clientkey.pem  host_vars   provisioning.yaml
+root@control:~/vprofile/exercise12# vim templates/ntpconf_centos
+(add the above content we copied to this file)
+
+
+
+-------------------------------login tu ubuntu now
+
+root@control:~/vprofile/exercise12# ssh -i clientkey.pem ubuntu@172.31.20.123
+[web03 login]
+root@ip-172-31-20-123:~# cat /etc/ntp.conf
+# /etc/ntp.conf, configuration for ntpd
+
+# Specify one or more NTP servers.
+server 0.ubuntu.pool.ntp.org iburst
+server 1.ubuntu.pool.ntp.org iburst
+server 2.ubuntu.pool.ntp.org iburst
+server 3.ubuntu.pool.ntp.org iburst
+
+# Use Ubuntu's NTP server as a backup.
+server ntp.ubuntu.com
+
+# By default, exchange time with everybody, but don't allow configuration.
+restrict -4 default kod notrap nomodify nopeer noquery limited
+restrict -6 default kod notrap nomodify nopeer noquery limited
+
+# Local users may interrogate the ntp server more closely.
+restrict 127.0.0.1
+restrict ::1
+
+exit back to control
+root@control:~/vprofile/exercise12# vim templates/ntpconf_ubuntu
+paste the file content here
+
+in the provisioning.yaml file make the chnages
+
+
+---
+- name: provisioning
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install packages on CentOS
+      yum:
+        name: "{{ item }}"
+        state: present
+      when: ansible_distribution == "CentOS"
+      loop:
+        - chrony
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Install packages on Ubuntu
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+      loop:
+        - ntp
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Start and enable chrony service on CentOS
+      service:
+        name: chronyd
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Start and enable ntp service on Ubuntu
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: banner file
+      copy:
+        content: '# This server is managed my ansible. no manual changes please'
+        dest: /etc/motd
+
+    - name: Deploy ntp agent conf on centos
+      template:
+        src: templates/ntpconf_centos
+        dest: /etc/chrony.conf
+        backup: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Deploy ntp agent conf on ubuntu
+      template:
+        src: templates/ntpconf_ubuntu
+        dest: /etc/ntp.conf
+        backup: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: restart chrony service on CentOS
+      service:
+        name: chronyd
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: restart ntp service on Ubuntu
+      service:
+        name: ntp
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+
+
+
+
+
+root@control:~/vprofile/exercise12# ls
+ansible.cfg    group_vars  inventory          templates
+clientkey.pem  host_vars   provisioning.yaml
+root@control:~/vprofile/exercise12# vim group_vars/all
+root@control:~/vprofile/exercise12#
+{update it with the below}
+
+
+
+USRNM: commonuser
+COMM: variable from groupvars_all file
+ntp0: 0.north-america.pool.ntp.org
+ntp1: 1,north-america.pool.ntp.org
+ntp2: 2.north-america.pool.ntp.org
+ntp3: 3.north-america.pool.ntp.org
+
+
+
+
+
+root@control:~/vprofile/exercise12# vim templates/ntpconf_centos
+root@control:~/vprofile/exercise12#
+
+
+
+[at the beginning of the file mkae chnages]
+# Use public servers from the pool.ntp.org project.
+# Please consider joining the pool (https://www.pool.ntp.org/join.html).
+pool "{{ntp0}}" iburst
+pool "{{ntp1}}" iburst
+pool "{{ntp2}}" iburst
+pool "{{ntp3}}" iburst
+
+
+
+root@control:~/vprofile/exercise12# vim templates/ntpconf_ubuntu
+[make same changes as made above in this file as well]
+
+and make the run
+
+ansible-playbook provisioning.yaml
+
+
+
+copy thi sfrom the ansibel website
+- name: Create a directory if it does not exist
+  file:
+    path: /etc/some_directory
+    state: directory
+    mode: '0755'
+
+-make chahnges in the yaml file
+
+---
+- name: provisioning
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install packages on CentOS
+      yum:
+        name: "{{ item }}"
+        state: present
+      when: ansible_distribution == "CentOS"
+      loop:
+        - chrony
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Install packages on Ubuntu
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+      loop:
+        - ntp
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Start and enable chrony service on CentOS
+      service:
+        name: chronyd
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Start and enable ntp service on Ubuntu
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: banner file
+      copy:
+        content: '# This server is managed my ansible. no manual changes please'
+        dest: /etc/motd
+
+    - name: Deploy ntp agent conf on centos
+      template:
+        src: templates/ntpconf_centos
+        dest: /etc/chrony.conf
+        backup: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Deploy ntp agent conf on ubuntu
+      template:
+        src: templates/ntpconf_ubuntu
+        dest: /etc/ntp.conf
+        backup: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: restart chrony service on CentOS
+      service:
+        name: chronyd
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: restart ntp service on Ubuntu
+      service:
+        name: ntp
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Create a directory if it does not exist
+      file:
+        path: /etc/some_directory
+        state: directory
+ansible-playbook provisioning.yaml
+
+{as u can see in the op everytime we run the service is restarted but we need to so someting by which the service gets restarted weh  we eant so we ar going to do that in the next lecture}
+
+
+                                                            

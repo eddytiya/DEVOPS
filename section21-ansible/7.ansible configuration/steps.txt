@@ -1,0 +1,37 @@
+change the default behaviour of ansible
+
+ORDER OF ANSIBLE CONFIG
+1. ANSIBLE_CONFIG(enviromnet varaible if set)
+2.ansible.cfg(in the current dir)
+3.~/.ansible.cfg(in the home dir)
+4./etc/ansible/ansible.cfg
+
+
+
+-in sudo user of control
+vim /etc/ansible/ansible.cfg
+
+
+
+
+sudo mkdir -p /var/log/ansible
+sudo chown ubuntu:ubuntu /var/log/ansible  # Adjust ownership as necessary
+sudo chmod 755 /var/log/ansible
+
+
+
+create a ansible.cfg file and add the folowing init
+[defaults]
+host_key_checking=False
+inventory=./inventory
+forks=5
+log_path=/var/log/ansible/log
+
+[privilege_escalation]
+become=True
+become_method=sudo
+become_ask_pass=False
+
+~
+ansible-playbook db.yaml
+()to run the file

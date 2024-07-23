@@ -1,0 +1,110 @@
+192.160.0.0 -->network ip
+192.160.0.1 -->first usabel ip
+192.160.0.2
+       |
+       |
+       |
+192.160.0.254--> last usabel ip
+192.160.0.255 --> broadcast
+
+
+we got to know this by subnet mask
+
+which is 255.255.255.0
+
+so we know only last octat no can be updated
+
+total ip --> 256
+total usable io --> 254
+
+
+
+classA:10.0.0.0-10.255.255.255
+classb:172.16.0.0-172.31.255.255
+classc: 192.168.0.0- 192.168.255.255
+
+eg:172.16.12.36
+   255.255.0.0
+
+172.16-->this is ntwk address
+12.36-->this is host address
+
+172.16.0.0-->ntwk
+172.16.0.1
+.
+.
+.
+172.16.1.0
+172.16.2.0
+.
+.
+.
+172.16.2.255
+172.16.3.0
+.
+.
+.
+172.16.255.254 -->last usable ip
+172.16.255.255 -->broadcast
+
+total ip:256x256=65,536
+so we can get this much ips if we use the above combo of ip and subnet 
+172.16.12.36 and 255.255.0.0 respectively
+
+
+------------------------------------------------------
+eg2
+
+10.23.12.56
+255.0.0.0
+so we know that
+
+10.-->this is of host
+23.12.56--> this is of network
+
+
+10.0.0.0
+10.0.0.1
+.
+.
+.
+10.255.255.254
+10.255.255.255
+
+total IP--> 256x256x256=1,67,77,216 ips
+
+---------------------------------------------------------
+CIDR
+255.0.0.0
+11111111.00000000.00000000.00000000
+no of 1s:/8
+
+255.255.0.0
+11111111.11111111.00000000.00000000
+no of 1s:/16
+
+255.255.255.0
+11111111.11111111.11111111.00000000
+no of 1s:/24
+
+
+
+
+
+so if 
+172.20.0.0/16:
+this means /16 is the subnet of
+255.255.0.0
+11111111.11111111.00000000.00000000
+1st two octat are for ntwk and last 2 r for hosts
+
+
+
+
+
+-------------------
+eg3:
+
+172.20.0.0
+255.255.0.0
+

@@ -1,0 +1,56 @@
+DOCKER
+
+WE ISOLATE OUR SERVICES{TOMCAT,APACHE ETC}
+.TO HOST APPS WE NEED INFRASTRUCTURE
+.WE USE VMS/CLOUD COMPUTING TO SETUP INFRA
+.WE ISOLATE OUR SERVICES IN OS OF VM
+.BECZ OF ISOLATION WE END UP SETTING UP MULTIPLE VMS
+.VMS/INSTANCES WILL BE OVERPROVISIONED(rxtra ram and menory de dena)
+-results in hai costs
+
+VMS ARE EXPENSIVE
+
+.EVERY VM AS OS
+.OS ARE EXPENSOVE
+.OS NEEDS LICENSING
+.OS TAKES TIME TO BOOT
+.VMS ARE PORTABLE BUT BULKY
+.VMS NEED RESOURCES FOR ITS OS
+.ALL THIS TO ISOLATE SERVICE
+
+
+
+POINT TO BE NOTED
+.isolating services are IMP{need os}
+.high availability achived by multiple vms
+.portability matters or eases the deployment
+.all raises capEX and opEx
+
+
+ISOLATION WITHOUT OS:
+.IMAGINE MULTIPLE SERVICES RUNNING IN SAME OS BUT ISOLATED
+
+containers:processes running in a directory(isolation a process)
+
+.containers share the machines OS system keral nad therefore do not require an os per application
+.a container is a standard unit of software that packages up 
+    -code and dependencies
+
+diff betn cotainer and vm
+
+.container offer isolation not virtualization
+.light weight
+.containers are OS virtualization
+.VMs are hardwae virtualizzation
+.vms need os ,containers dont need os
+
+
+
+DOCKER:
+-DOCKER MANAGES YOUR CONTAINERS
+.WE CAN RUN CONTAINERS WITHOUT DOCKER BUT WE NEED TO SETUP A LOT OF THINGS MANUALLY WHICH DOCKER DOES FOR US
+.OPEN SOURCE PROJECT
+.MAIN POWER OF DOCKER IS IMAGES(WE CAN EASILY CREATE CONTAINERS FROM DOCKER)
+.WINDOWS CONTAINERS RUNS ON WINDOWS os AND LINUX CONTAINERS ON LINUX OS
+
+

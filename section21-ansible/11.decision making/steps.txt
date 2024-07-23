@@ -1,0 +1,58 @@
+do the basics
+root@control:~# cp -r exercise9 exercise10
+cp: cannot stat 'exercise9': No such file or directory
+root@control:~# cd vprofile
+root@control:~/vprofile# cp -r exercise9 exercise10
+root@control:~/vprofile# cd exercise10
+root@control:~/vprofile/exercise10# ls
+ansible.cfg    group_vars  inventory         vars_precedence.yaml
+clientkey.pem  host_vars   print_facts.yaml
+root@control:~/vprofile/exercise10# rm -rf print_facts.yaml vars_precedence.yaml
+root@control:~/vprofile/exercise10# ls
+ansible.cfg  clientkey.pem  group_vars  host_vars  inventory
+root@control:~/vprofile/exercise10# ping -m all
+ping: invalid argument: 'all'
+root@control:~/vprofile/exercise10# ansible -m ping all
+[] ping all to see whether all are connected or not
+
+root@control:~/vprofile/exercise10# vim provisioning.yaml
+root@control:~/vprofile/exercise10#
+
+---
+- name: provisioning
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install chrony on CentOS
+      yum:
+        name: chrony
+        state: present
+      when: ansible_distribution == "CentOS"
+
+    - name: Install chrony on Ubuntu
+      apt:
+        name: chrony
+        state: present
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Start and enable chrony service on CentOS
+      service:
+        name: chronyd
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Start and enable chrony service on Ubuntu
+      service:
+        name: chrony
+        state: started
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+1>see op1 for the skips and error
+
+
+to see when condition refer this documentation:"https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_conditionals.html"
+due to the usage of when it is showing skipped
+
+
+

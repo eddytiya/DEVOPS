@@ -1,0 +1,55 @@
+get the link
+root@ip-172-31-17-108:~# git clone -b docker https://github.com/devopshydclub/vprofile-project.git
+
+root@ip-172-31-17-108:~# ls
+composetest  images  snap  vprodbdata  vprofile-project
+root@ip-172-31-17-108:~# cd vprofile-project
+root@ip-172-31-17-108:~/vprofile-project# ls
+Docker-files  ansible  kubefiles  src
+README.md     compose  pom.xml    vprofile.iml
+root@ip-172-31-17-108:~/vprofile-project# cd Docker-files
+root@ip-172-31-17-108:~/vprofile-project/Docker-files# ls
+app  d.txt  db  web
+root@ip-172-31-17-108:~/vprofile-project/Docker-files# cd app
+
+
+root@ip-172-31-17-108:~/vprofile-project/Docker-files/app# ls
+Dockerfile  multistage
+root@ip-172-31-17-108:~/vprofile-project/Docker-files/app# cat Dockerfile
+FROM tomcat:8-jre11
+LABEL "Project"="Vprofile"
+LABEL "Author"="Imran"
+
+RUN rm -rf /usr/local/tomcat/webapps/*
+COPY target/vprofile-v2.war /usr/local/tomcat/webapps/ROOT.war
+
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
+WORKDIR /usr/local/tomcat/
+VOLUME /usr/local/tomcat/webappsroot@ip-172-31-17-108:~/vprofile-project/D
+
+
+
+create a new dir and in that docker file and use this
+FROM openjdk:8 AS BUILD_IMAGE
+RUN apt update && apt install maven -y
+RUN git clone -b vp-docker https://github.com/imranvisualpath/vprofile-repo.git
+RUN cd vprofile-repo && mvn install
+
+FROM tomcat:8-jre11
+
+RUN rm -rf /usr/local/tomcat/webapps/*
+
+COPY --from=BUILD_IMAGE vprofile-repo/target/vprofile-v2.war /usr/local/tomcat/webapps/ROOT.war
+
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
+
+for multi stage nad build
+
+
+
+[build the img]
+docker build -t appimg:v1 .
+
+

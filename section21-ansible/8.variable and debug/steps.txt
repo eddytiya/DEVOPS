@@ -1,0 +1,165 @@
+we create a playbook task--->JSON format---->variable to store---->In task/print it
+
+
+
+-for defining the variables in the playbook 
+--->open the db.yaml file
+syantax to define a variable
+
+"{{variableNAME}}"
+
+eg
+
+---
+- name: DBserver setup
+  hosts: dbservers
+  become: yes
+  vars:#variables are defined here
+    dbname: electric
+    dbuser: current
+    dbpass: tesla
+  tasks:
+    - name: Install mariadb-server
+      ansible.builtin.yum:
+        name: mariadb-server
+        state: present
+
+    - name: Install pymysql
+      ansible.builtin.yum:
+        name: python3-PyMySQL
+        state: present
+
+
+    - name: Start mariadb service
+      ansible.builtin.service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    - name: Create a new database
+      community.mysql.mysql_db:
+        name: "{{dbname}}"#variable usage
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+    - name: Create database
+      community.mysql.mysql_user:
+        name: "{{dbuser}}"
+        password: "{{dbpass}}"
+        priv: '*.*:ALL'
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+
+-ansible-playbook db.yaml
+
+
+
+
+--we can also print from the playbook using the debug
+
+- name: DBserver setup
+  hosts: dbservers
+  become: yes
+  vars:
+    dbname: electric
+    dbuser: current
+    dbpass: tesla
+  tasks:#this prints
+    - debug:
+        msg: " the dbname is {dbname}"
+
+    - debug:
+        var: dbuser
+
+    - name: Install mariadb-server
+      ansible.builtin.yum:
+        name: mariadb-server
+        state: present
+
+    - name: Install pymysql
+      ansible.builtin.yum:
+        name: python3-PyMySQL
+        state: present
+
+
+    - name: Start mariadb service
+      ansible.builtin.service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    - name: Create a new database
+      community.mysql.mysql_db:
+        name: "{{dbname}}"
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+    - name: Create database
+      community.mysql.mysql_user:
+        name: "{{dbuser}}"
+        password: "{{dbpass}}"
+        priv: '*.*:ALL'
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+~
+
+
+1>op k liye refer
+
+
+
+
+
+
+
+
+---------------------------------------1more thing
+- name: DBserver setup
+  hosts: dbservers
+  become: yes
+  vars:
+    dbname: electric
+    dbuser: current
+    dbpass: tesla
+  tasks:
+    - debug:
+        msg: " the dbname is {dbname}"
+
+    - debug:
+        var: dbuser
+
+    - name: Install mariadb-server
+      ansible.builtin.yum:
+        name: mariadb-server
+        state: present
+
+    - name: Install pymysql
+      ansible.builtin.yum:
+        name: python3-PyMySQL
+        state: present
+
+
+    - name: Start mariadb service
+      ansible.builtin.service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    - name: Create a new database
+      community.mysql.mysql_db:
+        name: "{{dbname}}"
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+    - name: Create database
+      community.mysql.mysql_user:
+        name: "{{dbuser}}"
+        password: "{{dbpass}}"
+        priv: '*.*:ALL'
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+      register: dbout
+    - name: print dbout variable
+      debug:
+        var:dbout
+[add the last 4 lines]
+
+
+this will show the op upon execution

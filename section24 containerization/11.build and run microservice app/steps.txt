@@ -1,0 +1,37 @@
+Build and run microservice app
+
+
+-crwate an ec2 instance with t3 medium
+-add the anotehr text file content or install the prequisite 
+
+- curl wget https://github.com/devopshydclub/emartapp.git
+
+root@ip-172-31-43-87:~# ls
+emartapp  snap
+root@ip-172-31-43-87:~# cd emartapp
+root@ip-172-31-43-87:~/emartapp# docker-compose build
+
+
+
+root@ip-172-31-43-87:~/emartapp# docker images
+REPOSITORY        TAG       IMAGE ID       CREATED          SIZE
+emartapp_client   latest    2f6bcbefe97f   27 seconds ago   193MB
+emartapp_webapi   latest    b4ffb8f9285f   3 minutes ago    564MB
+emartapp_api      latest    8f556ed299cd   4 minutes ago    930MB
+
+
+
+[this will pull the images of mongo mysql nginix]
+root@ip-172-31-43-87:~/emartapp# docker-compose up -d
+
+Creating emongo  ... done
+Creating emartdb ... done
+Creating nginx   ... done
+Creating api     ... done
+Creating webapi  ... done
+Creating client  ... done
+
+
+
+
+1>put your instance ip in browser to see the op as of img1

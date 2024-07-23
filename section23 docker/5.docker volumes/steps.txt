@@ -1,0 +1,210 @@
+container volumes
+#persisitent storage for volatile containers
+
+
+.data does not persisit when that container no longer exists and it can be difficult
+to get the data out of the container is another processes needs it
+
+.containers writable layer is tightly coupled with host machine where
+the container is running.
+u cant easily move the data somewhere else
+
+docker has 2 options for containers to store files in host machine
+
+.volumes:managed by docker (/vara/lib/docker/volumes)on linux
+.bind mounts :stored any where in the host system 
+
+we ar gonna look at both of them
+
+
+
+from docker hub pull MYSQL AND INSTALL FROM THE DOCUMENTATION
+
+root@ip-172-31-17-108:~# docker pull mysql:5.7
+root@ip-172-31-17-108:~# docker images
+REPOSITORY   TAG       IMAGE ID       CREATED        SIZE
+mysql        5.7       5107333e08a8   7 months ago   501MB
+
+what is the vol dir or u want to know waht port no it runs so un can use inspect cmd
+
+root@ip-172-31-17-108:~# docker inspect mysql:5.7
+1>img 1 shows ports
+2.volumes this is what u r looking for
+
+
+
+FIRST WE WILL DO IT FOR BIND MOUNT
+root@ip-172-31-17-108:~# docker run --name vprodb -d -e MYSQL_ROOT_PASSWORD=secretpassword -p 3030:3306 -v /home/ubuntu/vprodbdata:/var/lib/mysql mysql:5.7
+913aa2438825ec34eecd9358811ef1916bbbf03dc5762b6763ad50f804e5b3d7
+
+
+
+Command Breakdown:
+docker run:
+
+This command is used to create and start a new container from a specified image.
+--name vprodb:
+
+This option assigns the name "vprodb" to the container. Naming containers makes them easier to reference.
+-d:
+
+This flag runs the container in detached mode, which means it runs in the background.
+-e MYSQL_ROOT_PASSWORD=secretpassword:
+
+The -e flag sets an environment variable inside the container.
+MYSQL_ROOT_PASSWORD=secretpassword sets the MySQL root user's password to "secretpassword".
+-p 3030:3306:
+
+The -p flag maps ports between the host and the container.
+3030:3306 maps port 3030 on the host to port 3306 on the container.
+3030: The port on the host machine.
+3306: The default port for MySQL inside the container.
+-v /home/ubuntu/vprodbdata:/var/lib/mysql:
+
+The -v flag mounts a volume, linking a directory on the host to a directory in the container.
+/home/ubuntu/vprodbdata: The directory on the host machine.
+/var/lib/mysql: The directory inside the container where MySQL stores its data.(highlighted in img2)
+This ensures that MySQL data is stored persistently on the host and not lost when the container stops.
+mysql:5.7:
+
+The name of the Docker image to use, in this case, the official MySQL image version 5.7
+
+
+
+
+root@ip-172-31-17-108:~# docker ps
+CONTAINER ID   IMAGE       COMMAND                  CREATED         STATUS         PORTS                                                  NAMES
+913aa2438825   mysql:5.7   "docker-entrypoint.s…"   2 minutes ago   Up 2 minutes   33060/tcp, 0.0.0.0:3030->3306/tcp, :::3030->3306/tcp   vprodb
+[u can see the img up and running]
+
+root@ip-172-31-17-108:~# ls vprodbdata
+auto.cnf         client-key.pem  ibdata1     performance_schema  server-key.pem
+ca-key.pem       ib_buffer_pool  ibtmp1      private_key.pem     sys
+ca.pem           ib_logfile0     mysql       public_key.pem
+client-cert.pem  ib_logfile1     mysql.sock  server-cert.pem
+
+[this dir and the below dir in bash will have the same file content]
+
+[login into the bin bash  ]
+root@ip-172-31-17-108:~# docker exec -it vprodb /bin/bash
+bash-4.2#
+
+bash-4.2# cd /var/lib/mysql
+bash-4.2# ls
+auto.cnf         client-key.pem  ibdata1     performance_schema  server-key.pem
+ca-key.pem       ib_buffer_pool  ibtmp1      private_key.pem     sys
+ca.pem           ib_logfile0     mysql       public_key.pem
+client-cert.pem  ib_logfile1     mysql.sock  server-cert.pem
+{same content as said eabove of mysql files}
+
+
+[below we have deleted the docke but u can still ee the content of the docker]
+
+root@ip-172-31-17-108:~# docker ps
+CONTAINER ID   IMAGE       COMMAND                  CREATED         STATUS         PORTS                                                  NAMES
+913aa2438825   mysql:5.7   "docker-entrypoint.s…"   9 minutes ago   Up 9 minutes   33060/tcp, 0.0.0.0:3030->3306/tcp, :::3030->3306/tcp   vprodb
+root@ip-172-31-17-108:~# docker stop vprodb
+vprodb
+root@ip-172-31-17-108:~# docker rm vprodb
+vprodb
+root@ip-172-31-17-108:~# ls
+snap  vprodbdata
+root@ip-172-31-17-108:~# ls vprodbdata/
+root@ip-172-31-17-108:~# ls /home/ubuntu/vprodbdata
+auto.cnf         client-key.pem  ibdata1             private_key.pem  sys
+ca-key.pem       ib_buffer_pool  mysql               public_key.pem
+ca.pem           ib_logfile0     mysql.sock          server-cert.pem
+client-cert.pem  ib_logfile1     performance_schema  server-key.pem
+
+
+
+THIS I SHOW U CAN PRESERVE THE DATA 
+BUT TO PRESERVE THE DATA THE BETTER OPTION IS DOCKER VOLUMES NOT BINS
+stop and remove the previous docker
+
+
+
+[this cmd gives us various volume options]
+root@ip-172-31-17-108:~# docker volume
+
+Usage:  docker volume COMMAND
+
+Manage volumes
+
+Commands:
+  create      Create a volume
+  inspect     Display detailed information on one or more volumes
+  ls          List volumes
+  prune       Remove unused local volumes
+  rm          Remove one or more volumes
+
+
+
+[create a docker volume]
+root@ip-172-31-17-108:~# docker volume create mydbdata
+mydbdata
+root@ip-172-31-17-108:~# docker volume ls
+local     mydbdata
+
+[docker running nad creation]
+root@ip-172-31-17-108:~# docker run --name vprodb -d -e MYSQL_ROOT_PASSWORD=secretpassword -p 3030:3306 -v mydbdata:/var/lib/mysql mysql:5.7
+affc86fcd0c275553e3f69ea868cca95b6e6ee9654bc19879210fbc6db71b745
+root@ip-172-31-17-108:~# docker ps
+CONTAINER ID   IMAGE       COMMAND                  CREATED          STATUS          PORTS                                                  NAMES
+affc86fcd0c2   mysql:5.7   "docker-entrypoint.s…"   41 seconds ago   Up 40 seconds   33060/tcp, 0.0.0.0:3030->3306/tcp, :::3030->3306/tcp   vprodb
+
+
+
+[data is stored in this dir]
+root@ip-172-31-17-108:~# ls /var/lib/docker/volumes
+799b8e0a0690621ccb953ee2e895d1ee3e87dedcbfe011e8821f08d08d49132a  metadata.db
+a7bccc33cc57cacfa62c3cbf95d307dc6d5367adf252d3f6571c5e13fd519e0b  mydbdata
+backingFsBlockDev
+[inside u should have mydbdata]
+root@ip-172-31-17-108:~# ls /var/lib/docker/volumes/mydbdata/
+_data
+[inside that u should see ypur data]
+root@ip-172-31-17-108:~# ls /var/lib/docker/volumes/mydbdata/_data
+auto.cnf         client-key.pem  ibdata1     performance_schema  server-key.pem
+ca-key.pem       ib_buffer_pool  ibtmp1      private_key.pem     sys
+ca.pem           ib_logfile0     mysql       public_key.pem
+client-cert.pem  ib_logfile1     mysql.sock  server-cert.pem
+
+
+
+us can use 
+docker inspect vprodb
+[to see the patha nd volumes details here also]
+3>img3 is of docker volumes
+
+-to see logs 
+docker logs vprodb
+
+
+
+
+[we can ping the ip of the container we got from inspect command]
+root@ip-172-31-17-108:~# ping 172.17.0.2
+
+
+[we can also login to the mysql client cause we installed it with passwd]
+root@ip-172-31-17-108:~# mysql:5.7 -h 172.17.0.2 -u root -psecretpass
+
+
+
+[dat lsat remove everything]
+root@ip-172-31-17-108:~# docker ps -a
+CONTAINER ID   IMAGE       COMMAND                  CREATED          STATUS          PORTS                                                  NAMES
+affc86fcd0c2   mysql:5.7   "docker-entrypoint.s…"   13 minutes ago   Up 13 minutes   33060/tcp, 0.0.0.0:3030->3306/tcp, :::3030->3306/tcp   vprodb
+root@ip-172-31-17-108:~# docker stop affc86fcd0c2
+affc86fcd0c2
+root@ip-172-31-17-108:~# docker rm affc86fcd0c2
+affc86fcd0c2
+root@ip-172-31-17-108:~# docker images
+REPOSITORY   TAG       IMAGE ID       CREATED        SIZE
+mysql        5.7       5107333e08a8   7 months ago   501MB
+root@ip-172-31-17-108:~# docker rmi mysql
+Error response from daemon: No such image: mysql:latest
+root@ip-172-31-17-108:~# docker rmi mysql:5.7
+
+

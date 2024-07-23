@@ -1,0 +1,57 @@
+https://docs.ansible.com/ansible/latest/command_guide/intro_adhoc.html
+-----------------------------------------------------------------------
+INTRODUCTION TO ad HOC CMDS
+ad hoc commands are great for tasks you repeat rarely
+run the cmd
+
+-ansible web01 -m ansible.builtin.yum -a "name=httpd state=present" -i inventory
+1>this will show an error as in the img 1
+2>it says that the user needs to be the root user and we r normal ec2-user as shown in img 2
+
+this user has the pervilige to do sudo but not gonna do until u tell
+to escalate the previlige add''--become at the end
+
+- ansible web01 -m ansible.builtin.yum -a "name=httpd state=present" -i inventory --become
+
+3>changed op as in img3
+
+now run the cmd for web servers
+
+- ansible webservers -m ansible.builtin.yum -a "name=httpd state=present" -i inventory --become
+
+[u will see 2 ops 1 for web01 for which we applied it previously in green
+and in yellow for web02 for which we applied in yellow]
+4>look img 4 for op
+
+
+
+this is configureation management for which iy only applied changes if required
+
+change the state
+
+ansible webservers -m ansible.builtin.yum -a "name=httpd state=absent" -i inventory --become
+
+ansible webservers -m ansible.builtin.yum -a "name=httpd state=present" -i inventory --become
+
+
+SOME OTHER CMDS
+ansible webservers -m ansible.builtin.service -a "name=httpd state=started enabled=yes" -i inventory --become
+(RUN IT 2 TIME TO SEE THE DIFFERENCE)
+
+
+now
+create a file
+vim index.html 
+         this is managed by ansible 
+save and quit
+
+[now we r gonna push it to web server]
+ansible webservers -m ansible.builtin.copy -a "src=index.html dest=/var/www/html/index.html" -i inventory --become
+
+
+now go to aws instance web02 and change the inbound security rules 
+[port 80 from anywhere]
+
+cp the public ip of web02 run it on web
+
+5>and see the op as in img5

@@ -1,0 +1,375 @@
+https://hub.docker.com/:here u can see official docker images
+we can create our own images and upload it ti docker hub as well
+
+
+DOCKER HUB IS A REGISTRY FOR DOCKER IMAGES
+
+A Docker image is like a blueprint for creating a Docker container. It includes everything needed for an application to run: the application code, system tools, libraries, and settings.
+
+Think of it as a packaged version of your app and its environment, ready to be shipped and run anywhere.
+
+.CONSIST OF MULTIPLE LAYERS
+.HAS IT OWN FILESYATEM LIKE FORMAT
+.CONTAINER RUNS FROM THE IMAGES
+.IMAGESA RE CALLED AS REPOSITORIES IN REGISTRIES
+
+WE HAVE MANY MORE DOCKER REGISTRIES
+-DOCKER HUB
+-GOOGLE CONTAINER REGISTRY ETC
+
+Here are some basic Docker commands:
+
+-->Docker Version:
+docker --version
+Check the installed Docker version.
+
+-->Docker Info:
+docker info
+Get detailed information about Docker installed on your system.
+
+-->Pull an Image:
+docker pull <image_name>
+Download an image from Docker Hub.
+
+-->List Images:
+docker images
+List all Docker images on your system.
+
+-->Run a Container:
+docker run <image_name>
+Create and start a container from an image.
+
+-->List Running Containers:
+docker ps
+Show all currently running containers.
+
+-->List All Containers:
+docker ps -a
+Show all containers (running and stopped).
+
+-->Stop a Container:
+docker stop <container_id>
+Stop a running container.
+
+-->Start a Container:
+docker start <container_id>
+Start a stopped container.
+
+-->Remove a Container:
+docker rm <container_id>
+Delete a container.
+
+-->Remove an Image:
+docker rmi <image_name>
+Delete an image from your system.
+
+-->Build an Image:
+docker build -t <image_name> <path_to_dockerfile>
+
+
+----------------------------------------------------------------
+IN DOCKER HUB SEARCH NGINX 
+
+docker pull nginx:THIS CMD IS UED TO PULL NGINX FROM DOCKER HUB
+
+
+root@ip-172-31-17-108:~# docker images
+REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
+nginx         latest    fffffc90d343   2 weeks ago     188MB
+hello-world   latest    d2c94e258dcb   14 months ago   13.3kB
+[see the nginx image]
+
+-NOW LETS RUN CONTAINER FROM THAT FROM THE DOCUMENTATION
+
+THERE ARE TAGS SO WE CAN PULL IMAGES WITH DIFFERENT TAGS 
+docker pull nginx:perl
+
+root@ip-172-31-17-108:~# docker images
+REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
+nginx         latest    fffffc90d343   2 weeks ago     188MB
+nginx         perl      ee6f2e0876a4   6 weeks ago     236MB
+hello-world   latest    d2c94e258dcb   14 months ago   13.3kB
+
+
+NOW HOW TO USE THIS IMAGE?
+
+docker run --name myweb -p 7080:80 -d nginx
+
+
+BREAKDOWN OF THE COMMAND
+docker run: This command is used to create and start a new Docker container.
+
+--name myweb: This option assigns the name myweb to the container. Naming a container makes it easier to manage.
+
+-p 7080:80: This option maps port 7080 on your host machine to port 80 inside the container(NGINX RUNS ON PORT80 THATS Y). This means you can access the Nginx server running in the container by navigating to http://localhost:7080 on your host machine.
+
+-d: This option runs the container in detached mode, which means it runs in the background.
+
+nginx: This is the name of the Docker image to use for the container. In this case, it uses the official Nginx image from Docker Hub.
+
+
+
+WE CAN NOW ACCESS NGAINX FROM 'PUBILI_IP:7090' ON BROWSER
+
+
+
+
+in AWS add security rule in security 
+ALL TRAFFIC from MY IP
+
+1> u can see an op as in img1 
+the port useud is 7080 becz i typo 7080 instead of 7090
+
+2>to stop a container u can use docker stop <container id > or name used(myweb)
+root@ip-172-31-17-108:~# docker stop ebe4b63c078a
+ebe4b63c078a
+
+
+3>docker ps -a:
+  u will see the docker in the exited state in img3
+
+
+
+
+-to start a docker again u can use the id or name again
+
+root@ip-172-31-17-108:~# docker start myweb1
+myweb1
+root@ip-172-31-17-108:~# docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS         PORTS                                   NAMES
+c312ff4b0547   nginx     "/docker-entrypoint.…"   10 minutes ago   Up 8 seconds   0.0.0.0:7080->80/tcp, :::7080->80/tcp   myweb1
+
+
+
+
+--------------------------------------------------------------
+lets do some investigation
+
+---ps -ef
+4>in img 4 u can see the processes running as highlighted
+
+
+root@ip-172-31-17-108:~# cd /var/lib/docker
+root@ip-172-31-17-108:/var/lib/docker# ls
+buildkit    engine-id  network   plugins   swarm  volumes
+containers  image      overlay2  runtimes  tmp
+root@ip-172-31-17-108:/var/lib/docker# cd containers
+root@ip-172-31-17-108:/var/lib/docker/containers# ls
+7b135145f7f312ad7b3a2cce692d0a70b12d15a484ca2b9d68d15cf5b61e103b
+c312ff4b054744967bc2b554a03f9f98b6aa31015f747956a2b77a1bb3f6d073
+ebe4b63c078a53a936511aaee1e2512fe7d20277258134938b76fde6007dd057
+fd155f1dc26a2f42b65838df32f3b9a52e34d97d1d168bb9e47307788cc34a8d
+root@ip-172-31-17-108:/var/lib/docker/containers#
+
+
+-go to the directory 
+enter the container directory
+ls
+u can see 4 images 
+match the image with the one u created
+
+root@ip-172-31-17-108:/var/lib/docker/containers# docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS         PORTS                                   NAMES
+c312ff4b0547   nginx     "/docker-entrypoint.…"   15 minutes ago   Up 4 minutes   0.0.0.0:7080->80/tcp, :::7080->80/tcp   myweb1
+root@ip-172-31-17-108:/var/lib/docker/containers#
+
+
+
+
+GET INTO THAT
+root@ip-172-31-17-108:/var/lib/docker/containers# cd c312ff4b054744967bc2b554a03f9f98b6aa31015f747956a2b77a1bb3f6d073
+
+
+
+AND U CAN SEE SOME DATA THERE
+
+root@ip-172-31-17-108:/var/lib/docker/containers/c312ff4b054744967bc2b554a03f9f98b6aa31015f747956a2b77a1bb3f6d073# ls
+c312ff4b054744967bc2b554a03f9f98b6aa31015f747956a2b77a1bb3f6d073-json.log  hosts
+checkpoints                                                                mounts
+config.v2.json                                                             resolv.conf
+hostconfig.json                                                            resolv.conf.hash
+hostname
+
+
+
+TO CHECK THE SIZE OF THE DIRECTORY
+root@ip-172-31-17-108:/var/lib/docker/containers# du -sh c312ff4b054744967bc2b554a03f9f98b6aa31015f747956a2b77a1bb3f6d073
+40K     c312ff4b054744967bc2b554a03f9f98b6aa31015f747956a2b77a1bb3f6d073
+
+
+
+IMAGES RUN FROM HERE
+root@ip-172-31-17-108:/var/lib/docker/image# cd ..
+root@ip-172-31-17-108:/var/lib/docker# ls image/overlay2/
+distribution  imagedb  layerdb  repositories.json
+root@ip-172-31-17-108:/var/lib/docker#
+
+
+
+
+
+
+
+---to run commands in the docker we can use
+
+root@ip-172-31-17-108:~# docker exec myweb ls /
+bin
+boot
+dev
+docker-entrypoint.d
+docker-entrypoint.sh
+etc
+home
+lib
+lib64
+media
+mnt
+opt
+proc
+root
+run
+sbin
+srv
+sys
+tmp
+usr
+var
+
+[THIS SHOWS ALL TEH FILES AND DIR IN THE DOCKER MYWEB ]
+
+
+
+
+
+
+
+
+TO GET ATTACHED TO YOUR SELD IN THE CONTAINER USE TEH CMD 
+root@ip-172-31-17-108:~# docker exec -it myweb /bin/bash
+root@ebe4b63c078a:/#
+
+
+WE CANNOT RUN PS OR IFCONFIG COMMANDS INSIDE THE CONTAINER WE NEED TO INSTALL IT
+
+root@ebe4b63c078a:/# apt update
+root@ebe4b63c078a:/# apt install procps
+
+
+root@ebe4b63c078a:/# ps -ef
+UID          PID    PPID  C STIME TTY          TIME CMD
+root           1       0  0 11:20 ?        00:00:00 nginx: master process nginx -g daemon of
+nginx         21       1  0 11:20 ?        00:00:00 nginx: worker process
+root          35       0  0 11:28 pts/0    00:00:00 /bin/bash
+root         229      35  0 11:31 pts/0    00:00:00 ps -ef
+
+
+[now u can see the processes of the contaier only ]
+
+exit to get our
+some containers may not have bash shells so use 'sh'
+
+
+
+to remove a docker image
+root@ip-172-31-17-108:~# docker images
+REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
+nginx         latest    fffffc90d343   2 weeks ago     188MB
+nginx         perl      ee6f2e0876a4   6 weeks ago     236MB
+hello-world   latest    d2c94e258dcb   14 months ago   13.3kB
+root@ip-172-31-17-108:~# docker rmi nginx:perl
+
+[name:tag]
+
+to delete an image
+we need to stop a container befpre deleting it
+
+
+
+look below
+
+
+
+root@ip-172-31-17-108:~# docker images
+REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
+nginx         latest    fffffc90d343   2 weeks ago     188MB
+hello-world   latest    d2c94e258dcb   14 months ago   13.3kB
+root@ip-172-31-17-108:~# docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED       STATUS          PORTS                                   NAMES
+ebe4b63c078a   nginx     "/docker-entrypoint.…"   2 hours ago   Up 16 minutes   0.0.0.0:7080->80/tcp, :::7080->80/tcp   myweb
+root@ip-172-31-17-108:~# docker rm ebe4b63c078a
+Error response from daemon: cannot remove container "/myweb": container is running: stop the container before removing or force remove
+
+IT THROWS AN ERROR SAYS WE NEED TO STOP BEFORE REMOVING IT
+
+
+root@ip-172-31-17-108:~# docker stop ebe4b63c078a
+ebe4b63c078a
+root@ip-172-31-17-108:~# docker rm ebe4b63c078a
+ebe4b63c078a
+
+so i stopped and removed it
+
+root@ip-172-31-17-108:~# docker rmi nginx
+deleted
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------
+another eg
+use docker ubuntu
+but it needs bin/bash ru run withour it it would not run 
+
+
+run it from here but as soon as u exit the process would be dead cause ubuntu reacts from the bash
+root@ip-172-31-17-108:~# docker run -it ubuntu /bin/bash
+
+
+
+
+
+
+
+
+
+
+
+
+remove everything
+root@ip-172-31-17-108:~# docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+root@ip-172-31-17-108:~# docker images
+REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
+ubuntu        latest    35a88802559d   4 weeks ago     78.1MB
+hello-world   latest    d2c94e258dcb   14 months ago   13.3kB
+root@ip-172-31-17-108:~# docker ps -a
+CONTAINER ID   IMAGE         COMMAND       CREATED         STATUS                     PORTS     NAMES
+0632799623be   ubuntu        "/bin/bash"   3 minutes ago   Exited (0) 3 minutes ago             vigorous_kalam
+7b135145f7f3   hello-world   "/hello"      3 hours ago     Exited (0) 3 hours ago               sleepy_cori
+fd155f1dc26a   hello-world   "/hello"      3 hours ago     Exited (0) 3 hours ago               fervent_dewdney
+root@ip-172-31-17-108:~# docker rm vigorous_kalam sleepy_cori fervent_dewdney
+vigorous_kalam
+sleepy_cori
+fervent_dewdney
+root@ip-172-31-17-108:~# docker images
+REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
+ubuntu        latest    35a88802559d   4 weeks ago     78.1MB
+hello-world   latest    d2c94e258dcb   14 months ago   13.3kB
+root@ip-172-31-17-108:~# docker rmi ubuntu hello-world
+
+
+
+
+
+

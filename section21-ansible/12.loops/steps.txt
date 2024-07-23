@@ -1,0 +1,66 @@
+loops 
+do the needfull
+
+ubuntu@control:~$ sudo -i
+root@control:~# cd vprofile
+root@control:~/vprofile# ls
+exercise1   exercise2  exercise4  exercise6  exercise8  group_vars
+exercise10  exercise3  exercise5  exercise7  exercise9
+root@control:~/vprofile# cp -r exercise10 exercise11
+root@control:~/vprofile# cd exercise11
+root@control:~/vprofile/exercise11# ls
+ansible.cfg  clientkey.pem  group_vars  host_vars  inventory  provisioning.yaml
+root@control:~/vprofile/exercise11# vim provisioning.yaml
+
+
+in this we have installed a single package but what if we want to install more packages
+
+we can use loops 
+
+add this in the provisioning .yaml file
+
+---
+- name: provisioning
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install packages on CentOS
+      yum:
+        name: "{{ item }}"
+        state: present
+      when: ansible_distribution == "CentOS"
+      loop:
+        - chrony
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Install packages on Ubuntu
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+      loop:
+        - ntp
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Start and enable chrony service on CentOS
+      service:
+        name: chronyd
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Start and enable ntp service on Ubuntu
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+root@control:~/vprofile/exercise11# ansible-playbook provisioning.yaml

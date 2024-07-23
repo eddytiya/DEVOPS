@@ -1,0 +1,26 @@
+-WE ARE GOING TO SETUP4 MACHINES 
+1-WITH ANSIBLE AND OTHER 3 WITH CENTOS
+                          (2 fro web server and 1 for db)
+----------------------------------------
+-create an instance named control
+-choose ubuntu
+-t2 micro
+-create a key=pair:control
+1>make chnages in network as per the image 1
+-launch instance
+-----------------------------------------
+create another instance named:vprofile-web00
+AMI:from marketplace centos9
+-instance t2 micro
+-create key:client-key
+2>in network add my ip and add another rule 
+(from port 22 using control-sg)
+
+--------------------------------------
+now login to the ubuntu instance
+and install ansoble on it
+
+$ sudo apt update
+$ sudo apt install software-properties-common
+$ sudo add-apt-repository --yes --update ppa:ansible/ansible
+$ sudo apt install ansible

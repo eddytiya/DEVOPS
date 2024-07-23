@@ -1,0 +1,71 @@
+ansible playbook and modules
+
+-playbooks are written in yaml format
+
+create a new file in exercise5 
+
+
+ vim web-db.yaml
+
+
+- name: webserver setup
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Install httpd
+      ansible.builtin.yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable httpd service
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: yes
+
+- name: DBserver setup
+  hosts: dbserver
+  become: yes
+  tasks:
+    - name: Install mariadb-server
+      ansible.builtin.yum:
+        name: mariadb-server
+        state: present
+
+    - name: Start and enable mariadb service
+      ansible.builtin.service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+
+-ansible web01 -m ansible.builtin.yum -a "name=httpd state=absent" -i inventory --become
+[make changes make the changes to absent to run the above yaml file]
+
+
+
+TO RUN THE PLAYBOOK USE THE FOLLOWING COMMAND
+
+- ansible-playbook -i inventory web-db.yaml
+1>FOR THE OUTPUT
+from the op
+[gathering facts is collecting the info sbout the system]-it does not make any chnage
+
+
+-->to ge textra info 
+ ansible-playbook -i inventory web-db.yaml -v
+[shows awhich ansible config file and json format]
+
+- ansible-playbook -i inventory web-db.yaml -vv
+- ansible-playbook -i inventory web-db.yaml -vvv
+-  ansible-playbook -i inventory web-db.yaml -vvvv
+
+gives us more detailed 
+- ansible-playbook -i inventory web-db.yaml --syntax-check
+[playbook name aaya toh syntac sahi hai]
+
+
+
+
+------------------------------------------
+https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_intro.html

@@ -1,0 +1,202 @@
+to build images we need to create dockerfile
+
+docker file containes
+
+from--> base img
+labels-->add metadatadata to an image
+run--> execute cmds
+add/copy--> adds files and folders into image
+cmd --> runs binaries/commands on docker
+entrypoint-->allows u to config a container that will run as an executable
+volume-->creates a ount point and marks it as holding externally mounted volumes
+expose-->container listens to a specified ntwk port at runtime
+eg.nginx:port 80,sql:3306
+
+env -->environment variables
+user--> set the user name or UID
+workdir--> sets the working directory
+arg--> defines a variable that users can pass at on build-time
+onbuild-->adds to the image a trigger instruction to be executed at a later stage
+
+
+
+
+
+NOW LETS LEARN BY AN EXAMPLE
+LETS BUILD A DOCKER IMAGE
+CHOOSE A WEBSITE FROM TOOLPLATE.COM AND WE WILL RUN IT THRU APACHE IN UBUNTU CONTAINER
+
+ubuntu@ip-172-31-17-108:~$ sudo -i
+root@ip-172-31-17-108:~# mkdir images
+root@ip-172-31-17-108:~# cd images/
+root@ip-172-31-17-108:~/images# ls
+
+the template we are using is nano folio
+
+mkdir nano
+root@ip-172-31-17-108:~/images# wget https://www.tooplate.com/zip-templates/2122_nano_folio.zip
+root@ip-172-31-17-108:~/images# ls
+2122_nano_folio.zip  nano
+
+[unzip]
+root@ip-172-31-17-108:~/images# unzip 2122_nano_folio.zip
+root@ip-172-31-17-108:~/images# ls
+2122_nano_folio  2122_nano_folio.zip  nano
+[tar the file]
+root@ip-172-31-17-108:~/images/2122_nano_folio# tar czvf nano.tar.gz *
+[WE ARCHIVE EVERYTHING IN THE CURRENT DIR]
+[BREAKDOWN]
+Command Breakdown
+tar:
+
+The command to create, extract, or list the contents of an archive.
+c:
+
+Create a new archive.
+z:
+
+Compress the archive using gzip.
+v:
+
+Verbosely list files processed. This option allows you to see the files being added to the archive.
+f nano.tar.gz:
+
+f indicates that the next argument is the name of the archive file.
+nano.tar.gz is the name of the archive file to create.
+*:
+
+This wildcard matches all files and directories in the current directory.
+
+[move up to the parent directory eg of pareant dir is in img1]
+root@ip-172-31-17-108:~/images/2122_nano_folio# mv nano.tar.gz ../
+root@ip-172-31-17-108:~/images/2122_nano_folio# ls
+css  fontawesome  img  index.html  js
+[now e can remove the zip file and unzip file]
+root@ip-172-31-17-108:~/images/2122_nano_folio# ls
+css  fontawesome  img  index.html  js
+root@ip-172-31-17-108:~/images/2122_nano_folio# cd ..
+root@ip-172-31-17-108:~/images# ls
+2122_nano_folio  2122_nano_folio.zip  nano  nano.tar.gz
+root@ip-172-31-17-108:~/images# rm -ef 2122_nano_folio.zip 2122_nano_folio
+rm: invalid option -- 'e'
+Try 'rm --help' for more information.
+root@ip-172-31-17-108:~/images# rm -rf 2122_nano_folio.zip 2122_nano_folio
+root@ip-172-31-17-108:~/images# ls
+nano  nano.tar.gz
+
+
+
+
+root@ip-172-31-17-108:~/images# ls
+nano  nano.tar.gz
+root@ip-172-31-17-108:~/images# mv nano.tar.gz nano/
+root@ip-172-31-17-108:~/images# cd nano/
+root@ip-172-31-17-108:~/images/nano#
+
+
+[create a docker file D should be caps]
+root@ip-172-31-17-108:~/images/nano# ls
+nano.tar.gz
+root@ip-172-31-17-108:~/images/nano# vim Dockerfile
+FROM ubuntu:latest
+LABEL "Author"="Aditya"
+label "Project"="nano"
+RUN apt update && apt install git -y
+RUN apt install apache2 -y
+CMD ["/usr/sbin/apache2ctl", "-D","FOREGROUND"]
+EXPOSE 80
+WORKDIR /var/www/html
+VOLUME /var/log/apache2
+ADD nano.tar.gz /var/www/html
+#COPY nano.tar.gz /var/www/html
+
+save and exit
+
+[breakdown]
+ase Image: Starts from the latest Ubuntu image.
+Labels: Adds metadata labels for author and project.
+Updates and Installs: Updates package lists and installs Git and Apache2.
+Sets the Command: Configures the default command to run Apache2 in the foreground.
+Exposes Port: Declares port 80 for HTTP traffic.
+Working Directory: Sets the working directory to /var/www/html.
+Volume: Creates a volume for Apache logs.
+Adds Files: Extracts nano.tar.gz into the document root.
+
+BUT RUNNING THE ABOVE IMAGE WILL FAIL BECZ DURING INSATALLATION IT WILL ASK TIME ZONE WHICH MAKES
+IT INTERACTIVE AND INTERACTIVE DOCKERFILE ALWAYS FAIL SO WE NEED TO SET AN ENVIRONEMNT VARIABLE TO MAKE TIT FAIL
+
+FROM ubuntu:latest
+LABEL "Author"="Aditya"
+LABEL "Project"="nano"
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update && apt install git -y
+RUN apt install apache2 -y
+CMD ["/usr/sbin/apache2ctl", "-D","FOREGROUND"]
+EXPOSE 80
+WORKDIR /var/www/html
+VOLUME /var/log/apache2
+ADD nano.tar.gz /var/www/html
+#COPY nano.tar.gz /var/www/html
+~
+
+[to run the build image]
+root@ip-172-31-17-108:~/images/nano# docker build -t nanoimg .
+[u can see the op in img2]
+
+[the image we created the tag is latest cause we didnt give any tag]
+root@ip-172-31-17-108:~/images/nano# docker images
+REPOSITORY   TAG       IMAGE ID       CREATED              SIZE
+nanoimg      latest    7f5bd23c9b77   About a minute ago   256MB
+root@ip-172-31-17-108:~/images/nano#
+
+
+[test the img by building it]
+root@ip-172-31-17-108:~/images/nano# docker run -d --name nanowebsite -p 9080:80 nanoimg06c4b2f2617bf023a47bccc90e458b9d31e41726c3df323e4689461030f6c924
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+NOTE IF THERE ARE ANY ERRORS IN YOUR DOCKER FILE AND IT DOES NOT RUNS U NEED TO REMOVE THE CONTAINER AND IMAGE
+-docker rm <id>
+-docker rmi <image name>
+and rerun it
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+put your public ip:9080 {port no}
+http://54.196.158.18:9080/
+
+
+
+
+--->create a repo in docker hub
+
+we are going to push it thru docker
+(rebuild the docker but now with the name of your acc) 
+root@ip-172-31-17-108:~/images/nano# docker build -t eddytiya/nanoimg:v2 .
+
+[u can now see 2 images with the same img id]
+root@ip-172-31-17-108:~/images/nano# docker images
+REPOSITORY         TAG       IMAGE ID       CREATED          SIZE
+eddytiya/nanoimg   v2        7f5bd23c9b77   14 minutes ago   256MB
+nanoimg            latest    7f5bd23c9b77   14 minutes ago   256MB
+
+
+
+[login to docker]
+
+root@ip-172-31-17-108:~/images/nano# docker login
+Log in with your Docker ID or email address to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com/ to create one.
+You can log in with your password or a Personal Access Token (PAT). Using a limited-scope PAT grants better security and is required for organizations using SSO. Learn more at https://docs.docker.com/go/access-tokens/
+
+Username: eddytiya1
+Password:
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credential-stores
+
+
+[push the img]
+root@ip-172-31-17-108:~/images/nano# docker push eddytiya1/nanoimg:v2
+
+
+
+3>u can see a new repo creaed
+

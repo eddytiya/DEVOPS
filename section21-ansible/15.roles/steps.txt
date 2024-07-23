@@ -1,0 +1,400 @@
+ubuntu@control:~$ sudo -i
+root@control:~# cd vprofile
+root@control:~/vprofile# ls
+exercise1   exercise11  exercise13  exercise3  exercise5  exercise7  exercise9
+exercise10  exercise12  exercise2   exercise4  exercise6  exercise8  group_vars
+root@control:~/vprofile# cp -r exercise13 exercise14
+root@control:~/vprofile# cd exercise14
+root@control:~/vprofile/exercise14# ls
+ansible.cfg    group_vars  inventory          templates
+clientkey.pem  host_vars   provisioning.yaml
+root@control:~/vprofile/exercise14# vim provisioning.yaml
+ 
+
+
+  ---
+- name: provisioning
+  hosts: all
+  become: yes
+  vars:
+    my_dir: /opt/dir22
+  tasks:
+    - name: Install packages on CentOS
+      yum:
+        name: "{{ item }}"
+        state: present
+      when: ansible_distribution == "CentOS"
+      loop:
+        - chrony
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Install packages on Ubuntu
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+      loop:
+        - ntp
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Start and enable chrony service on CentOS
+      service:
+        name: chronyd
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Start and enable ntp service on Ubuntu
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: banner file
+      copy:
+        content: '# This server is managed my ansible. no manual changes please'
+        dest: /etc/motd
+
+    - name: Create a directory if it does not exist
+      file:
+        path: "{{my_dir}}"
+        state: directory
+
+
+    - name: Deploy ntp agent conf on centos
+      template:
+        src: templates/ntpconf_centos
+        dest: /etc/chrony.conf
+        backup: yes
+      when: ansible_distribution == "CentOS"
+      notify:
+        -  restart chrony service on CentOS
+
+
+    - name: Deploy ntp agent conf on ubuntu
+      template:
+        src: templates/ntpconf_ubuntu
+        dest: /etc/ntp.conf
+        backup: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Dump file
+      copy:
+        src: files/myfile.txt
+        dest: /tmp/myfile.txt
+
+
+  handlers:
+    - name: restart chrony service on CentOS
+      service:
+        name: chronyd
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: restart ntp service on Ubuntu
+      service:
+        name: ntp
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+
+root@control:~/vprofile/exercise14# mkdir files
+root@control:~/vprofile/exercise14# vim files/myfile.txt
+   
+    this is an example lecture of roles
+ansible-playbook provisioning.yaml
+
+
+
+-cd ..
+-tree exercise14
+
+1> u can see the tree structure in img1
+
+
+U U CAN SEE THERE R MANY DIR NOW IT IS ALWAYS BETTER TO RIGHT A ROLE AFTER WRITING A PLAYBOOK
+
+
+
+root@control:~/vprofile# cd exercise14
+root@control:~/vprofile/exercise14# mkdir roles
+root@control:~/vprofile/exercise14# cd roles/
+
+
+THIS IS HOW TO DEFINE A ROLE
+root@control:~/vprofile/exercise14/roles# ansible-galaxy init post-install#{post init is the role name we have to mention the role name same to same in the playbook also}
+Role post-install was created successfully
+
+root@control:~/vprofile/exercise14/roles# tree
+2>u can see the role creates many main.yml files for us
+
+in the tree u can see the dir we r going to simply copy 
+starting with vars file
+
+root@control:~/vprofile/exercise14/roles# cd ..
+root@control:~/vprofile/exercise14# ls
+ansible.cfg    files       host_vars  provisioning.yaml  templates
+clientkey.pem  group_vars  inventory  roles
+root@control:~/vprofile/exercise14# cat group_vars/all
+USRNM: commonuser
+COMM: variable from groupvars_all file
+ntp0: 0.north-america.pool.ntp.org
+ntp1: 1,north-america.pool.ntp.org
+ntp2: 2.north-america.pool.ntp.org
+ntp3: 3.north-america.pool.ntp.org
+
+[cp all the 4 users with user and comm]
+
+
+root@control:~/vprofile/exercise14# vim roles/post-install/vars/main.yml
+root@control:~/vprofile/exercise14#
+(cp into the dir)
+
+
+root@control:~/vprofile/exercise14# cat provisioning.yaml
+my_dir: /opt/dir22
+
+root@control:~/vprofile/exercise14# vim roles/post-install/vars/main.yml
+root@control:~/vprofile/exercise14#
+[add the above dir below]
+
+
+
+root@control:~/vprofile/exercise14# rm -rf group_vars host_vars
+root@control:~/vprofile/exercise14# ls
+ansible.cfg  clientkey.pem  files  inventory  provisioning.yaml  roles  templates
+
+
+[copy these]
+
+root@control:~/vprofile/exercise14# cp templates/* roles/post-install/templates/
+root@control:~/vprofile/exercise14# cp files/* roles/post-install/files/
+root@control:~/vprofile/exercise14# ls
+ansible.cfg  clientkey.pem  files  inventory  provisioning.yaml  roles  templates
+
+
+
+-ansible-playbook provisioning.yaml
+and copy this from the bottom
+
+    - name: restart chrony service on CentOS
+      service:
+        name: chronyd
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: restart ntp service on Ubuntu
+      service:
+        name: ntp
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+paste the above here:
+root@control:~/vprofile/exercise14# vim roles/post-install/handlers/main.yml
+
+[while in the above file use ':%s/^    /': to remove the 4 whitespaces cause it is not a yaml file ] 
+
+NOW CP ALL THE TASKS FROM THE YAML FILE
+ - name: Install packages on CentOS
+      yum:
+        name: "{{ item }}"
+        state: present
+      when: ansible_distribution == "CentOS"
+      loop:
+        - chrony
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Install packages on Ubuntu
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+      loop:
+        - ntp
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Start and enable chrony service on CentOS
+      service:
+        name: chronyd
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Start and enable ntp service on Ubuntu
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: banner file
+      copy:
+        content: '# This server is managed my ansible. no manual changes please'
+        dest: /etc/motd
+
+    - name: Create a directory if it does not exist
+      file:
+        path: "{{my_dir}}"
+        state: directory
+
+
+    - name: Deploy ntp agent conf on centos
+      template:
+        src: templates/ntpconf_centos
+        dest: /etc/chrony.conf
+        backup: yes
+      when: ansible_distribution == "CentOS"
+      notify:
+        -  restart chrony service on CentOS
+
+
+    - name: Deploy ntp agent conf on ubuntu
+      template:
+        src: templates/ntpconf_ubuntu
+        dest: /etc/ntp.conf
+        backup: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Dump file
+      copy:
+        src: files/myfile.txt
+        dest: /tmp/myfile.txt
+
+[paste it in here] 
+root@control:~/vprofile/exercise14# vim roles/post-install/tasks/main.yml
+[%s/^    //]:to remove whitespaces
+
+
+-open th eprovisionig.yaml file and delete everything except
+
+  ---
+- name: Provisioning servers
+  hosts: all
+  become: yes
+~
+-we are deleting becz we copied and psted it into other yml files
+-add roles
+- name: Provisioning servers
+  hosts: all
+  become: yes
+  roles:
+    - post-install
+root@control:~/vprofile/exercise14# vim roles/post-install/tasks/main.yml
+[open this]
+
+- name: Deploy ntp agent conf on centos
+  template:
+    src: ntpconf_centos.j2
+    dest: /etc/chrony.conf
+    backup: yes
+  when: ansible_distribution == "CentOS"
+  notify:
+    -  restart chrony service on CentOS
+
+
+- name: Deploy ntp agent conf on ubuntu
+  template:
+    src: ntpconf_ubuntu.j2
+    dest: /etc/ntp.conf
+    backup: yes
+  when: ansible_distribution == "Ubuntu"
+
+-change the src remove template and add .j2 init
+
+-also remove the files src from below as shown
+- name: Dump file
+  copy:
+    src: myfile.txt
+    dest: /tmp/myfile.txt
+
+
+
+-RENAMING THE FILES
+
+root@control:~/vprofile/exercise14# cd roles/post-install/templates
+root@control:~/vprofile/exercise14/roles/post-install/templates# ls
+ntpconf_centos  ntpconf_ubuntu
+root@control:~/vprofile/exercise14/roles/post-install/templates# mv ntpconf_centos ntpconf_centos.j2
+root@control:~/vprofile/exercise14/roles/post-install/templates# mv ntpconf_ubuntu ntpconf_ubuntu.j2
+root@control:~/vprofile/exercise14/roles/post-install/templates# ls
+ntpconf_centos.j2  ntpconf_ubuntu.j2
+root@control:~/vprofile/exercise14/roles/post-install/templates#
+
+ ansible-playbook provisioning.yaml
+3> u cans ee there r some changes in the op which is due to the rolws we ceated
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+ubuntu@control:~$ sudo -i
+root@control:~# cd vprofile
+root@control:~/vprofile# cp -r exercise14 exercise15
+root@control:~/vprofile# cd exercise15
+root@control:~/vprofile/exercise15# ls
+ansible.cfg    inventory          roles
+clientkey.pem  provisioning.yaml  templates
+root@control:~/vprofile/exercise15#
+
+[now we will move our variables from vars to defaults as u can see in tree defaults is the first in dir so we shoul basivally declare variables in defaults]
+
+root@control:~/vprofile/exercise15# cat roles/post-install/vars//main.yml
+---
+# vars file for post-install
+USRNM: commonuser
+COMM: variable from groupvars_all file
+ntp0: 0.north-america.pool.ntp.org
+ntp1: 1.north-america.pool.ntp.org
+ntp2: 2.north-america.pool.ntp.org
+ntp3: 3.north-america.pool.ntp.org
+my_dir: /opt/dir22
+root@control:~/vprofile/exercise15# vim roles/post-install/defaults/main.yml
+[mv the above cat files into the below default dir]
+
+root@control:~/vprofile/exercise15# vim roles/post-install/vars/main.yml  root@control:~/vprofile/exercise15#
+[delete everything from here]
+
+root@control:~/vprofile/exercise15# ansible-playbook provisioning.yaml
+
+
+now add this in provisioning.yaml playbook
+
+---
+- name: Provisioning servers
+  hosts: all
+  become: yes
+  roles:
+    - role: post-install
+      vars:
+        ntp0: 0.in.pool.ntp.org
+        ntp1: 1.in.pool.ntp.org
+        ntp2: 2.in.pool.ntp.org
+        ntp3: 3.in.pool.ntp.org
+
+root@control:~/vprofile/exercise15# ansible-playbook provisioning.yaml
+
+
+-----------------------------------------------------------------------------
+we aslo have roles created by the community
+[https://galaxy.ansible.com/ui/]:website to get roles
+
+-serach for what u want and follow the documentation

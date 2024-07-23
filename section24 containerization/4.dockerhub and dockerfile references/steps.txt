@@ -1,0 +1,38 @@
+so we have installed docekr 
+-we have docker acc
+-now we need to fetch the source code to write docker file and to build the image
+
+-logint o your github acc and go to this url(https://github.com/hkhcoder/vprofile-project)
+-fork the repo
+-select the branch containers before forking
+
+-after forking u should see like this
+(https://github.com/eddytiya/vprofile-project)
+
+
+------------------------------------------------
+now we are going to clone that repo 
+so open vs code
+select clone repo and give url in the hearder (not the internet url the github rerpo url)
+
+open the repo and switch to the branch containers
+
+
+
+1>click on main at the bottom left corner and select containers
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------
+docker file reference from docker hub
+-------------------------------------------------
+docker hub login
+-create a repo
+
+2>-create 3 docker repos like in img2

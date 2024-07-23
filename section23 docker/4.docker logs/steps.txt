@@ -1,0 +1,54 @@
+logs of your docker container
+
+root@ip-172-31-17-108:~# docker pull nginx
+
+root@ip-172-31-17-108:~# docker inspect nginx
+[this is metadata of image in Json format]
+
+
+
+root@ip-172-31-17-108:~# docker run -d -P nginx
+ba17af2ac712158fdfd33af9da9e66f94cc04aae31b9e95133e7f9daf95463e3
+
+[-d :means run the docker in the background if we dont do so the docker will exit and no it wont run u can check it by yourself
+to get back into shell we need to use ctrl+c-which will exit the cmd]
+
+
+root@ip-172-31-17-108:~# docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS          PORTS                                     NAMES
+ba17af2ac712   nginx     "/docker-entrypoint.…"   13 seconds ago   Up 12 seconds   0.0.0.0:32768->80/tcp, :::32768->80/tcp   mystifying_hertz
+
+root@ip-172-31-17-108:~# docker logs  mystifying_hertz
+[to see logs]
+
+
+
+
+root@ip-172-31-17-108:~# docker run -d -P mysql:5.7
+root@ip-172-31-17-108:~# docker ps
+root@ip-172-31-17-108:~# docker ps -a
+
+
+as u can see in image2 we run a docker file image and the image run but does not get started but gets exited 
+
+we can find the reason why using docker logs
+
+
+
+root@ip-172-31-17-108:~# docker logs exciting_ardinghelli
+
+
+3>in image 3 u can see logs and the reason for the exit
+
+
+
+
+root@ip-172-31-17-108:~# docker run -d -P -e MYSQL_ROOT_PASSWORD=mypass mysql:5.7
+2c8ac2b1474b032340316f381a3fcba2df76d816435222860bb811deb403a59f
+root@ip-172-31-17-108:~# docker ps
+CONTAINER ID   IMAGE       COMMAND                  CREATED          STATUS          PORTS                                                                                        NAMES
+2c8ac2b1474b   mysql:5.7   "docker-entrypoint.s…"   4 seconds ago    Up 3 seconds    0.0.0.0:32771->3306/tcp, :::32771->3306/tcp, 0.0.0.0:32772->33060/tcp, :::32772->33060/tcp   hungry_solomon
+ba17af2ac712   nginx       "/docker-entrypoint.…"   18 minutes ago   Up 18 minutes   0.0.0.0:32768->80/tcp, :::32768->80/tcp                                                      mystifying_hertz
+
+
+{above we improved our mistake and thus now we can see the docker up and running}

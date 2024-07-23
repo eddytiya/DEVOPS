@@ -1,0 +1,106 @@
+docker compose:helps run multiple dockers together
+
+docs(https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
+
+installation steps
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+
+[to make the file executabe]
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+
+
+{{{{https://docs.docker.com/compose/gettingstarted/}}}}
+
+
+1.create ad dir for the project
+mkdir composetest
+cd composetest
+
+
+2.create a  file app.py and insert this inside the file
+import time
+
+import redis
+from flask import Flask
+
+app = Flask(__name__)
+cache = redis.Redis(host='redis', port=6379)
+
+def get_hit_count():
+    retries = 5
+    while True:
+        try:
+            return cache.incr('hits')
+        except redis.exceptions.ConnectionError as exc:
+            if retries == 0:
+                raise exc
+            retries -= 1
+            time.sleep(0.5)
+
+@app.route('/')
+def hello():
+    count = get_hit_count()
+    return 'Hello World! I have been seen {} times.\n'.format(count)
+
+
+3.Create another file called requirements.txt in your project directory and paste the following code in:
+
+
+flask
+redis
+
+
+4.Create a Dockerfile and paste the following code in:
+
+
+# syntax=docker/dockerfile:1
+FROM python:3.10-alpine
+WORKDIR /code
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+RUN apk add --no-cache gcc musl-dev linux-headers
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+EXPOSE 5000
+COPY . .
+CMD ["flask", "run", "--debug"]
+
+
+5.Create a file called compose.yaml in your project directory and paste the following:
+
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:5000"
+  redis:
+    image: "redis:alpine"
+
+
+6.docker compose up
+
+
+
+
+no go to ec2 instance security grup
+
+and update all traffic from My IP
+
+
+
+img 1 u can see the output and and ip and port number 8000
+
+
+
+
+
+[this will help bringdown whte container ]
+root@ip-172-31-17-108:~/composetest# docker-compose down
+
+
+

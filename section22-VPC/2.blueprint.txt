@@ -1,0 +1,20 @@
+blueprint
+
+VPC RANGE:172.20.0.0/16
+4 SUBNETS: 2PUBLIC AND 2 PVT SUB
+2 ZONES:us-west-la,us-west-1b
+
+172.20.1.0/24-->[us-west-1a]
+172.20.2.0/24-->[us-west-1b]
+172.20.3.0/24-->[us-west-1a]
+172.20.4.0/24-->[us-west-1b]
+
+components 
+1 internet GW
+2 NAT gateway(we use 1 for paisa purpose)
+1EIP
+2 route tables :1 public sub RT,1 public sub RT
+1bastion host in pub subnet
+
+NACL
+1 more vpc===vpc peering
